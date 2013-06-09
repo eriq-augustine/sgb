@@ -1,0 +1,23 @@
+.gem {
+   width: 20px;
+   height: 20px;
+   background-image: url('../images/gems.png');
+
+   margin-left: 100px;
+}
+
+.gem-0 {
+   background-position: 0px 0px;
+}
+
+.gem-1 {
+   background-position: 0px -20px;
+}
+
+.gem-2 {
+   background-position: 0px -40px;
+}
+
+.gem-3 {
+   background-position: 0px -60px;
+}
