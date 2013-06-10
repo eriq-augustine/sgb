@@ -47,32 +47,8 @@ function Board(id, height, width) {
    }
 
    addBoard(this);
+   requestInitBoard(this.id);
 }
-
-// TODO(eriq): Move html to renderer.
-Board.prototype.init = function() {
-   var html = '<div class="inner-board">';
-
-   for (var row = 0; row < this.height; row++) {
-      html += '<div id="' + this.id + '-' + row + '" class="board-row board-row-' + row + '">';
-
-      for (var col = 0; col < this.width; col++) {
-         html += '<div id="' + this.id + '-' + row + '-' + col + '"' +
-                 ' class="board-cell' +
-                         ' board-cell-' + row + '-' + col +
-                         ' board-col-' + col + '"></div>';
-      }
-
-      html += '</div>';
-   }
-
-   html += '</div>';
-
-   $('#' + this.id).html(html);
-
-   // TEST(eriq)
-   requestBoardRender(this.id);
-};
 
 // TODO(eriq): This is where end game is checked for (one of two places).
 Board.prototype.releaseGem = function() {

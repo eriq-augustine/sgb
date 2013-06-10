@@ -59,6 +59,14 @@ function stopRenderer() {
    return true;
 }
 
+// Request an initial render of the board.
+// This will layout the html.
+function requestInitBoard(boardId) {
+   if (spfGet('_renderer_')) {
+      spfGet('_renderer_').addUpdate({type: 'boardInit', boardId: boardId});
+   }
+}
+
 // Request a re-render of the entire board.
 function requestBoardRender(boardId) {
    if (spfGet('_renderer_')) {
@@ -95,11 +103,38 @@ InternalRenderer.prototype.update = function() {
          case 'cell':
             this.renderCell(updateData.boardId, updateData.row, updateData.col);
             break;
+         case 'boardInit':
+            this.initBoard(updateData.boardId);
+            break;
          default:
             error('Unknown update type: ' + updateData.type);
             break;
       }
    }
+};
+
+InternalRenderer.prototype.initBoard = function(boardId) {
+   var board = getBoard(boardId);
+   var html = '<div class="inner-board">';
+
+   for (var row = 0; row < board.height; row++) {
+      html += '<div id="' + boardId + '-' + row + '" class="board-row board-row-' + row + '">';
+
+      for (var col = 0; col < board.width; col++) {
+         html += '<div id="' + boardId + '-' + row + '-' + col + '"' +
+                 ' class="board-cell' +
+                         ' board-cell-' + row + '-' + col +
+                         ' board-col-' + col + '"></div>';
+      }
+
+      html += '</div>';
+   }
+
+   html += '</div>';
+
+   $('#' + boardId).html(html);
+
+   this.renderBoard(boardId);
 };
 
 InternalRenderer.prototype.renderBoard = function(boardId) {

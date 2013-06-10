@@ -42,15 +42,10 @@ function Game() {
 
    this.lastDrop = 0;
 
-   // TODO(eriq): The order here is off until the html set is taken out of
-   //  Board.init().
    initRenderer();
 
    this.playerBoard = new Board('js-player-board', 13, 6);
-   this.playerBoard.init();
-
    this.opponentBoard = new Board('js-opponent-board', 13, 6);
-   this.opponentBoard.init();
 }
 
 Game.prototype.dropNow = function() {
