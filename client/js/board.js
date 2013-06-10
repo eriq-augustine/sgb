@@ -2,6 +2,29 @@
 
 var boardLookup = {};
 
+function addBoard(board) {
+   if (!spfGet('_boardLookup_')) {
+      spfSet('_boardLookup_', {});
+   }
+
+   spfGet('_boardLookup_')[board.id] = board;
+}
+
+function getBoard(id) {
+   if (spfGet('_boardLookup_')) {
+      return spfGet('_boardLookup_')[id];
+   }
+
+   return undefined;
+}
+
+// TODO(eriq): Delete board on destruction.
+function removeBoard(id) {
+   if (spfGet('_boardLookup_')) {
+      delete spfGet('_boardLookup_')[id];
+   }
+}
+
 function Board(id, height, width) {
    this.DROP_COLUMN = 3;
 
@@ -23,7 +46,7 @@ function Board(id, height, width) {
       }
    }
 
-   boardLookup[this.id] = this;
+   addBoard(this);
 }
 
 // TODO(eriq): Move html to renderer.

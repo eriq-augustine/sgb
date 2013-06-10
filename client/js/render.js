@@ -29,47 +29,92 @@
         };
 }());
 
+function initRenderer() {
+   if (spfGet('_renderer_')) {
+      error('Double init on renderer.');
+      return false;
+   }
+
+   spfSet('_renderer_', new InternalRenderer());
+   spfGet('_renderer_').start();
+
+   return true;
+}
+
+function startRenderer() {
+   if (!spfGet('_renderer_')) {
+      error('There is no renderer to start.');
+      return false;
+   }
+
+   spfGet('_renderer_').start();
+   return true;
+}
+
+function stopRenderer() {
+   if (spfGet('_renderer_')) {
+      spfGet('_renderer_').start();
+   }
+
+   return true;
+}
+
 // Request a re-render of the entire board.
 function requestBoardRender(boardId) {
-   // NOTE(eriq): This could be made more efficient by bucketing the requests by board.
-   window.spf.updates.push({type: 'board', boardId: boardId});
+   if (spfGet('_renderer_')) {
+      // NOTE(eriq): This could be made more efficient by bucketing the requests by board.
+      spfGet('_renderer_').addUpdate({type: 'board', boardId: boardId});
+   }
 }
 
 // Request a re-render of a specific cell.
 function requestCellRender(boardId, row, col) {
-   window.spf.updates.push({type: 'cell', boardId: boardId, row: row, col: col});
+   if (spfGet('_renderer_')) {
+      spfGet('_renderer_').addUpdate({type: 'cell', boardId: boardId, row: row, col: col});
+   }
 }
 
-function update() {
-   while (window.spf.updates.length > 0) {
-      var updateData = window.spf.updates.pop();
+// The renderer class should never be accessed by anyone direclty.
+// The static calls should be used instead.
+function InternalRenderer() {
+   this.render = true;
+   this.updates = [];
+}
+
+InternalRenderer.prototype.addUpdate = function(updateRequest) {
+   this.updates.push(updateRequest);
+}
+
+InternalRenderer.prototype.update = function() {
+   while (this.updates.length > 0) {
+      var updateData = this.updates.pop();
       switch (updateData.type) {
          case 'board':
-            renderBoard(updateData.boardId);
+            this.renderBoard(updateData.boardId);
             break;
          case 'cell':
-            renderCell(updateData.boardId, updateData.row, updateData.col);
+            this.renderCell(updateData.boardId, updateData.row, updateData.col);
             break;
          default:
             error('Unknown update type: ' + updateData.type);
             break;
       }
    }
-}
+};
 
-function renderBoard(boardId) {
-   var board = boardLookup[boardId];
+InternalRenderer.prototype.renderBoard = function(boardId) {
+   var board = getBoard(boardId);
 
    for (var i = 0; i < board.height; i++) {
       for (var j = 0; j < board.width; j++) {
-         renderCell(boardId, i, j);
+         this.renderCell(boardId, i, j);
       }
    }
-}
+};
 
 // TODO(eriq): Don't break animations.
-function renderCell(boardId, row, col) {
-   var gem = boardLookup[boardId].getGem(row, col);
+InternalRenderer.prototype.renderCell = function(boardId, row, col) {
+   var gem = getBoard(boardId).getGem(row, col);
    var cellId = '#' + boardId + '-' + row + '-' + col;
 
    var cell = $(cellId);
@@ -85,27 +130,26 @@ function renderCell(boardId, row, col) {
          error('Rendering different types of gems not yet implemented.');
       }
    }
-}
+};
 
-function initRenderer() {
-   window.spf.render = true;
-   window.spf.updates = [];
+InternalRenderer.prototype.start = function() {
+   this.render = true;
 
-   (function animloop(){
-      if (window.spf.render) {
-         window.requestAnimationFrame(animloop);
+   (function renderLoop() {
+      if (spfGet('_renderer_').render) {
+         window.requestAnimationFrame(renderLoop);
       }
 
-      update();
+      spfGet('_renderer_').update();
 
       //  TODO(eriq): Animations.
       // window.animationMachine.maybeAnimate();
    })();
-}
+};
 
-function stopRenderer() {
-   window.spf.render = false;
-}
+InternalRenderer.prototype.stop = function() {
+   this.render = false;
+};
 
 /*
 document.addEventListener('DOMContentLoaded', function() {

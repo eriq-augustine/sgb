@@ -4,7 +4,7 @@ var interval = 1000 / 20;
 var timerHandle = null;
 var val = 0;
 
-onmessage = function(evt) {
+self.onmessage = function(evt) {
    if (evt.data === 'start') {
       if (!timerHandle) {
          timerHandle = setInterval(function() {
