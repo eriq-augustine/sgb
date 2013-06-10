@@ -116,6 +116,10 @@ Board.prototype.moveDropGroup = function(rowDelta, colDelta) {
 };
 
 Board.prototype.canMoveDropGroup = function(rowDelta, colDelta) {
+   if (this.dropGroup === null) {
+      return false;
+   }
+
    if (rowDelta != 0 && colDelta != 0) {
       error('Cannot move diagonally');
       return false;
@@ -183,7 +187,9 @@ Board.prototype.validMoveLocation = function(row, col) {
 
 // TODO(eriq): Get direction and pivot from preferences.
 Board.prototype.changeDropOrientation = function() {
-   this.changeDropOrientationImpl(true, DropGroup.PIVOT_FIRST);
+   if (this.dropGroup) {
+      this.changeDropOrientationImpl(true, DropGroup.PIVOT_FIRST);
+   }
 };
 
 // TODO(eriq): Rotating into -1 breaks.
@@ -204,9 +210,6 @@ Board.prototype.changeDropOrientationImpl = function(clockwise, pivot) {
    var newSpot = null;
    var pivotSpot = null;
 
-   // TODO(eriq): Deal with changes that can't happen because of blockages.
-   // If there is room let it slide, otherwise just swap.
-
    var dropGems = this.getDropGemLocations();
    // New spot is the pivots spot plus the orientation delta.
    if (pivot === DropGroup.PIVOT_FIRST) {
@@ -225,9 +228,6 @@ Board.prototype.changeDropOrientationImpl = function(clockwise, pivot) {
    //  past the wall, then slide the piece over if possible).
    //  Allowing for a vertical slide can cause an infinite stall.
    if (delta.col != 0 && !this.validMoveLocation(newSpot.row, newSpot.col)) {
-      //TEST
-      console.log('slide');
-
       // Move in the opposite direction as the position.
       var slideDelta = delta.col * -1;
 
@@ -253,13 +253,41 @@ Board.prototype.changeDropOrientationImpl = function(clockwise, pivot) {
          }
       } else {
          // Blockage, just swap.
-         // TODO(eriq): HERE
-         //  Make sure to uodate newOrientation, newSpot, and pivotSpot.
+         var firstGem = this.clearGem(dropGems.first.row, dropGems.first.col);
+         var secondGem = this.clearGem(dropGems.second.row, dropGems.second.col);
+         this.placeGem(firstGem, dropGems.second.row, dropGems.second.col);
+         this.placeGem(secondGem, dropGems.first.row, dropGems.first.col);
+
+         // Orientation is currently vertical, get the next vertical.
+         newOrientation = (this.dropGroup.orientation + 2) % DropGroup.NUM_ORIENTATIONS;
+
+         if (pivot === DropGroup.PIVOT_FIRST) {
+            pivotSpot = dropGems.second;
+            newSpot = dropGems.first;
+         } else {
+            pivotSpot = dropGems.first;
+            newSpot = dropGems.second;
+         }
+      }
+   // It is possible to run into this situation from a horozontal orientation.
+   } else if (delta.row != 0 && !this.validMoveLocation(newSpot.row, newSpot.col)) {
+      // Vertical slides are disallowed, but we can still swap.
+      var firstGem = this.clearGem(dropGems.first.row, dropGems.first.col);
+      var secondGem = this.clearGem(dropGems.second.row, dropGems.second.col);
+      this.placeGem(firstGem, dropGems.second.row, dropGems.second.col);
+      this.placeGem(secondGem, dropGems.first.row, dropGems.first.col);
+
+      // Orientation is currently horizontal, get the next horizontal.
+      newOrientation = (this.dropGroup.orientation + 2) % DropGroup.NUM_ORIENTATIONS;
+
+      if (pivot === DropGroup.PIVOT_FIRST) {
+         pivotSpot = dropGems.second;
+         newSpot = dropGems.first;
+      } else {
+         pivotSpot = dropGems.first;
+         newSpot = dropGems.second;
       }
    } else {
-      //TEST
-      console.log('NO slide');
-
       this.moveGem(oldSpot.row, oldSpot.col, newSpot.row, newSpot.col);
    }
 
