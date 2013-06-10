@@ -41,7 +41,8 @@ function requestCellRender(boardId, row, col) {
 }
 
 function update() {
-   window.spf.updates.forEach(function(updateData) {
+   while (window.spf.updates.length > 0) {
+      var updateData = window.spf.updates.pop();
       switch (updateData.type) {
          case 'board':
             renderBoard(updateData.boardId);
@@ -53,7 +54,7 @@ function update() {
             error('Unknown update type: ' + updateData.type);
             break;
       }
-   }, this);
+   }
 }
 
 function renderBoard(boardId) {
