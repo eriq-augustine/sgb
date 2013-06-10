@@ -22,26 +22,30 @@ DropGroup.NUM_PIVOTS = 2;
 
 Gem.MAX_COUNTER = 5;
 
+// Used to give unique ids to gems.
+var gemCount = 0;
+
 function Gem(type) {
    this.type = type;
+   this.count = gemCount++;
 }
 
 function NormalGem(color) {
-   Gem.call(Gem.TYPE_NORMAL);
+   Gem.call(this, Gem.TYPE_NORMAL);
    this.color = color;
 }
 NormalGem.prototype = new Gem();
 NormalGem.prototype.constructor = NormalGem;
 
 function Destroyer(color) {
-   Gem.call(Gem.TYPE_DESTROYER);
+   Gem.call(this, Gem.TYPE_DESTROYER);
    this.color = color;
 }
 Destroyer.prototype = new Gem();
 Destroyer.prototype.constructor = Destroyer;
 
 function LockedGem(color) {
-   Gem.call(Gem.TYPE_LOCKED);
+   Gem.call(this, Gem.TYPE_LOCKED);
    this.color = color;
    this.counter = Gem.MAX_COUNTER;
 }
@@ -49,7 +53,7 @@ LockedGem.prototype = new Gem();
 LockedGem.prototype.constructor = LockedGem;
 
 function Star() {
-   Gem.call(Gem.TYPE_STAR);
+   Gem.call(this, Gem.TYPE_STAR);
 }
 Star.prototype = new Gem();
 Star.prototype.constructor = Star;

@@ -1,5 +1,7 @@
 "use strict";
 
+var boardLookup = {};
+
 function Board(id, height, width) {
    this.DROP_COLUMN = 3;
 
@@ -20,8 +22,11 @@ function Board(id, height, width) {
          this._board_[i][j] = null;
       }
    }
+
+   boardLookup[this.id] = this;
 }
 
+// TODO(eriq): Move html to renderer.
 Board.prototype.init = function() {
    var html = '<div class="inner-board">';
 
@@ -41,6 +46,9 @@ Board.prototype.init = function() {
    html += '</div>';
 
    $('#' + this.id).html(html);
+
+   // TEST(eriq)
+   requestBoardRender(this.id);
 };
 
 // TODO(eriq): This is where end game is checked for (one of two places).
@@ -87,23 +95,24 @@ Board.prototype.advanceDropGroup = function() {
 };
 
 Board.prototype.moveDropGroup = function(rowDelta, colDelta) {
+   if (!this.canMoveDropGroup(rowDelta, colDelta)) {
+      return false;
+   }
+
    var dropGems = this.getDropGemLocations();
 
-   if (this.canMoveDropGroup(rowDelta, colDelta)) {
-      // Because we don't want to have to check the orientations,
-      //  just remove both then place them.
-      var firstGem = this.clearGem(dropGems.first.row, dropGems.first.col);
-      var secondGem = this.clearGem(dropGems.second.row, dropGems.second.col);
+   // Because we don't want to have to check the orientations,
+   //  just remove both then place them.
+   var firstGem = this.clearGem(dropGems.first.row, dropGems.first.col);
+   var secondGem = this.clearGem(dropGems.second.row, dropGems.second.col);
 
-      this.placeGem(firstGem, dropGems.first.row + rowDelta, dropGems.first.col + colDelta);
-      this.placeGem(secondGem, dropGems.second.row + rowDelta, dropGems.second.col + colDelta);
+   this.placeGem(firstGem, dropGems.first.row + rowDelta, dropGems.first.col + colDelta);
+   this.placeGem(secondGem, dropGems.second.row + rowDelta, dropGems.second.col + colDelta);
 
-      this.dropGroupLocation.row = this.dropGroupLocation.row + rowDelta;
-      this.dropGroupLocation.col = this.dropGroupLocation.col + colDelta;
+   this.dropGroupLocation.row = this.dropGroupLocation.row + rowDelta;
+   this.dropGroupLocation.col = this.dropGroupLocation.col + colDelta;
 
-      return true;
-   }
-   return false;
+   return true;
 };
 
 Board.prototype.canMoveDropGroup = function(rowDelta, colDelta) {
@@ -154,18 +163,18 @@ Board.prototype.canMoveDropGroup = function(rowDelta, colDelta) {
       toCheck.push(dropGems.second);
    }
 
-   toCheck.forEach(function(gemLocation) {
-      if (!this.validMoveLocation(gemLocation.row + 1, gemLocation.col)) {
+   for (var i = 0; i < toCheck.length; i++) {
+      if (!this.validMoveLocation(toCheck[i].row + rowDelta, toCheck[i].col + colDelta)) {
          return false;
       }
-   }, this);
+   }
 
    return true;
 };
 
 // Is the given location valid to move into?
 Board.prototype.validMoveLocation = function(row, col) {
-   if (row >= 0 && row < this.height && col >= 0 && col < this.width) {
+   if (row < 0 || row >= this.height || col < 0 || col >= this.width) {
       return false;
    }
 
@@ -177,41 +186,92 @@ Board.prototype.changeDropOrientation = function() {
    this.changeDropOrientationImpl(true, DropGroup.PIVOT_FIRST);
 };
 
+// TODO(eriq): Rotating into -1 breaks.
 Board.prototype.changeDropOrientationImpl = function(clockwise, pivot) {
    if (pivot < 0 || pivot >= DropGroup.NUM_PIVOTS) {
       error("Invalid pivot (" + pivot + ").");
       return false;
    }
 
-   var orientationDelta = clockwise ? 1 : -1;
+   var orientationTurn = clockwise ? 1 : -1;
 
    var newOrientation =
-      (this.dropGroup.orientation + DropGroup.NUM_ORIENTATIONS + 1) %
+      (this.dropGroup.orientation + DropGroup.NUM_ORIENTATIONS + orientationTurn) %
       DropGroup.NUM_ORIENTATIONS;
 
    var delta = orientationDelta(newOrientation);
    var oldSpot = null;
    var newSpot = null;
+   var pivotSpot = null;
 
    // TODO(eriq): Deal with changes that can't happen because of blockages.
    // If there is room let it slide, otherwise just swap.
 
+   var dropGems = this.getDropGemLocations();
+   // New spot is the pivots spot plus the orientation delta.
    if (pivot === DropGroup.PIVOT_FIRST) {
-      var secondGemDelta = orientationDelta(this.dropGroup.orientation);
-      var secondGemLocation =
-         {row: this.dropGroupLocation.row + secondGemDelta.row,
-          col: this.dropGroupLocation.col + secondGemDelta.col};
-      oldSpot = secondGemLocation;
-      newSpot = {row: oldSpot.row + delta.row,
-                 col: colSpot.col + delta.col};
+      pivotSpot = dropGems.first;
+      oldSpot = dropGems.second;
+      newSpot = {row: pivotSpot.row + delta.row,
+                 col: pivotSpot.col + delta.col};
    } else {
-      oldSpot = this.dropGroupLocation;
-      newSpot = {row: oldSpot.row + delta.row,
-                 col: colSpot.col + delta.col};
-      this.dropGroupLocation = newSpot;
+      pivotSpot = dropGems.second;
+      oldSpot = dropGems.first;
+      newSpot = {row: pivotSpot.row + delta.row,
+                 col: pivotSpot.col + delta.col};
    }
 
-   this.moveGem(oldSpot.row, oldSpot.col, newSpot.row, newSpot.col);
+   // If the spot we are horizontally pivoting into is taken (or
+   //  past the wall, then slide the piece over if possible).
+   //  Allowing for a vertical slide can cause an infinite stall.
+   if (delta.col != 0 && !this.validMoveLocation(newSpot.row, newSpot.col)) {
+      //TEST
+      console.log('slide');
+
+      // Move in the opposite direction as the position.
+      var slideDelta = delta.col * -1;
+
+      // No need to check the orientation for the outside gem,
+      //  just check both. If they are both occupied, then there
+      //  is a blockage.
+      if (this.validMoveLocation(pivotSpot.row, pivotSpot.col + slideDelta) ||
+          this.validMoveLocation(newSpot.row, newSpot.col + slideDelta)) {
+         // Can slide.
+         pivotSpot = {row: pivotSpot.row, col: pivotSpot.col + slideDelta};
+         newSpot = {row: newSpot.row, col: newSpot.col + slideDelta};
+
+         if (pivot === DropGroup.PIVOT_FIRST) {
+            var firstGem = this.clearGem(dropGems.first.row, dropGems.first.col);
+            var secondGem = this.clearGem(dropGems.second.row, dropGems.second.col);
+            this.placeGem(firstGem, pivotSpot.row, pivotSpot.col);
+            this.placeGem(secondGem, newSpot.row, newSpot.col);
+         } else {
+            var firstGem = this.clearGem(dropGems.first.row, dropGems.first.col);
+            var secondGem = this.clearGem(dropGems.second.row, dropGems.second.col);
+            this.placeGem(firstGem, newSpot.row, newSpot.col);
+            this.placeGem(secondGem, pivotSpot.row, pivotSpot.col);
+         }
+      } else {
+         // Blockage, just swap.
+         // TODO(eriq): HERE
+         //  Make sure to uodate newOrientation, newSpot, and pivotSpot.
+      }
+   } else {
+      //TEST
+      console.log('NO slide');
+
+      this.moveGem(oldSpot.row, oldSpot.col, newSpot.row, newSpot.col);
+   }
+
+   // Update the orientation.
+   this.dropGroup.orientation = newOrientation;
+
+   // Update the internal location.
+   if (pivot !== DropGroup.PIVOT_FIRST) {
+      this.dropGroupLocation = newSpot;
+   } else {
+      this.dropGroupLocation = pivotSpot;
+   }
 
    return true;
 };
@@ -227,7 +287,7 @@ Board.prototype.getGem = function(row, col) {
    return this._board_[row][col];
 }
 
-// A convience function to use instead of using clearGem() then placeGem().
+// A convince function to use instead of using clearGem() then placeGem().
 Board.prototype.moveGem = function(fromRow, fromCol, toRow, toCol) {
    var gem = this.clearGem(fromRow, fromCol);
    return this.placeGem(gem, toRow, toCol);
@@ -252,7 +312,7 @@ Board.prototype.placeGem = function(gem, row, col) {
 
    this._board_[row][col] = gem;
 
-   requestCellRender(row, col);
+   requestCellRender(this.id, row, col);
 
    return true;
 };
@@ -274,7 +334,7 @@ Board.prototype.clearGem = function(row, col) {
    var tempGem = this._board_[row][col];
    this._board_[row][col] = null;
 
-   requestCellRender(row, col);
+   requestCellRender(this.id, row, col);
 
    return tempGem;
 };

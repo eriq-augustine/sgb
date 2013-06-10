@@ -60,6 +60,9 @@ function start() {
 
 function error(message) {
    console.log("Error: " + message);
+
+   // TEST
+   stopRenderer();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -72,6 +75,10 @@ document.addEventListener('DOMContentLoaded', function() {
    //window.logicWorker.postMessage('start');
 
    window.spf.lastDrop = 0;
+
+   // TODO(eriq): The order here is off until the html set is taken out of
+   //  Board.init().
+   initRenderer();
 
    window.spf.playerBoard = new Board('js-player-board', 13, 6);
    window.spf.playerBoard.init();
