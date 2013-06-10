@@ -1,5 +1,15 @@
 "use strict";
 
+// Some constants.
+Game.DROP_TIME = 750;
+
+Game.STATE_START = 0;
+Game.STATE_PAUSE = 1;
+Game.STATE_CONTROLLED_DROP = 2;
+Game.STATE_UNCONTROLLED_DROP = 3;
+Game.STATE_PUNISHMENT = 4;
+Game.NUM_STATES = 5;
+
 // Provide controled access to spf variables.
 function spfGet(key) {
    if (window._spf_) {
@@ -35,11 +45,11 @@ function dropComplete() {
 function Game() {
    this.logicWorker = new Worker("js/logicTimer.js");
    this.logicWorker.onmessage = function(evt) {
-      this.gameTick();
+      spfGet('_game_').gameTick();
    };
-   // TEST
-   //window.logicWorker.postMessage('start');
+   this.logicWorker.postMessage('start');
 
+   this.state = Game.STATE_START;
    this.lastDrop = 0;
 
    initRenderer();
@@ -50,32 +60,46 @@ function Game() {
 
 Game.prototype.dropNow = function() {
    // TODO(eriq)
-   console.log('TODO');
+   console.log('TODO: drop now');
 };
 
 Game.prototype.goLeft = function() {
-   this.playerBoard.moveDropGroup(0, -1);
+   if (this.state === Game.STATE_CONTROLLED_DROP) {
+      this.playerBoard.moveDropGroup(0, -1);
+   }
 };
 
 Game.prototype.goRight = function() {
-   this.playerBoard.moveDropGroup(0, 1);
+   if (this.state === Game.STATE_CONTROLLED_DROP) {
+      this.playerBoard.moveDropGroup(0, 1);
+   }
 };
 
 Game.prototype.goDown = function() {
-   this.playerBoard.advanceDropGroup();
+   if (this.state === Game.STATE_CONTROLLED_DROP) {
+      this.lastDrop = Date.now();
+      this.playerBoard.advanceDropGroup();
+   }
 };
 
 Game.prototype.changeOrientation = function() {
-   this.playerBoard.changeDropOrientation();
+   if (this.state === Game.STATE_CONTROLLED_DROP) {
+      this.playerBoard.changeDropOrientation();
+   }
 };
 
 // TODO(eriq)
 Game.prototype.gameTick = function() {
-   // TEST
-   goDown();
+   var now = Date.now();
+
+   if (this.state === Game.STATE_CONTROLLED_DROP &&
+       now - this.lastDrop >= Game.DROP_TIME) {
+      this.goDown();
+   }
 };
 
 Game.prototype.start = function() {
+   this.state = Game.STATE_CONTROLLED_DROP;
    this.playerBoard.releaseGem();
 };
 
