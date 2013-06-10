@@ -1,3 +1,5 @@
+"use strict";
+
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 // http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
 // requestAnimationFrame polyfill by Erik Möller. fixes from Paul Irish and Tino Zijdel
@@ -15,7 +17,7 @@
         window.requestAnimationFrame = function(callback, element) {
             var currTime = new Date().getTime();
             var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
               timeToCall);
             lastTime = currTime + timeToCall;
             return id;
@@ -27,20 +29,35 @@
         };
 }());
 
-function render() {
-   document.getElementById('test').innerHTML = window.count;
+// Request a re-render of the entire board.
+function requestBoardRender() {
+   // TODO(eriq);
 }
 
+// Request a re-render of a specific cell.
+function requestCellRender(row, col) {
+   // TODO(eriq);
+}
+
+/*
 document.addEventListener('DOMContentLoaded', function() {
-   window.count = 0;
-   var myWorker = new Worker("js/timerWorker.js");
-   myWorker.onmessage = function(evt) {
-      window.count = parseInt(evt.data);
-   };
-   myWorker.postMessage("gogo");
+   window.breakAnimation = false;
+   window.animationMachine = new AnimationMachine();
+
+   var gemAnimation = new Animation('theGem', [new AnimationFrame('gem-0', 100, console.log.bind(console, 'Hook: 0')),
+                                               new AnimationFrame('gem-1', 100, console.log.bind(console, 'Hook: 1')),
+                                               new AnimationFrame('gem-2', 100, console.log.bind(console, 'Hook: 2')),
+                                               new AnimationFrame('gem-3', 100, console.log.bind(console, 'Hook: 3'))],
+                                    true);
+   window.animationMachine.addAnimation(gemAnimation);
+   window.animationMachine.start();
 
    (function animloop(){
-      window.requestAnimationFrame(animloop);
-      render();
+      if (!window.breakAnimation) {
+         window.requestAnimationFrame(animloop);
+      }
+
+      window.animationMachine.maybeAnimate();
    })();
 });
+*/

@@ -1,0 +1,21 @@
+.board {
+   display: inline-block;
+
+   margin-left: 100px;
+}
+
+.inner-board {
+}
+
+.board-row {
+}
+
+.board-cell {
+   width: 20px;
+   height: 20px;
+
+   display: inline-block;
+
+   background-image: url('../images/gems.png');
+   background-position: 0px -80px;
+}
