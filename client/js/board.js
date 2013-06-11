@@ -175,9 +175,13 @@ Board.prototype.canMoveDropGroup = function(rowDelta, colDelta) {
    return true;
 };
 
+Board.prototype.inBounds = function(row, col) {
+   return !(row < 0 || row >= this.height || col < 0 || col >= this.width);
+};
+
 // Is the given location valid to move into?
 Board.prototype.validMoveLocation = function(row, col) {
-   if (row < 0 || row >= this.height || col < 0 || col >= this.width) {
+   if (!this.inBounds(row, col)) {
       return false;
    }
 
@@ -303,9 +307,59 @@ Board.prototype.changeDropOrientationImpl = function(clockwise, pivot) {
    return true;
 };
 
+// Move all unsupported gems down until they are supported.
+// Returns true if a srop occured.
+Board.prototype.dropUnsupported = function() {
+   var iterationDropped = true;
+   var dropped = false;
+
+   while (iterationDropped) {
+      iterationDropped = false;
+
+      // Start at the second to bottom row (bottom one does not need to drop).
+      for (var i = this.height - 2; i >= 0; i--) {
+         for (var j = 0; j < this.width; j++) {
+            // If there is a gem here and not bellow it, then drop.
+            if (this.getGem(i, j) && !this.getGem(i + 1, j)) {
+               this.moveGem(i, j, i + 1, j);
+               iterationDropped = true;
+               dropped = true;
+            }
+         }
+      }
+   }
+
+   return dropped;
+};
+
+Board.prototype.attemptDestroy = function() {
+   var destroyers = this.collectDestroyers();
+
+   // TODO(eriq): HERE
+};
+
+Board.prototype.collectDestroyers = function() {
+   // Could potentially keep track of all the destroyers/stars to speed this up.
+   var destroyers = [];
+   var stars = [];
+
+   for (var i = 0; i < this.height; i++) {
+      for (var j = 0; j < this.width; j++) {
+         var gem = this.getGem(i, j);
+         if (gem && gem.type === Gem.TYPE_DESTROYER) {
+            destroyers.push({gem: gem, row: i, col: j});
+         } else if (gem && gem.type === Gem.TYPE_STAR) {
+            stars.push({gem: gem, row: i, col: j});
+         }
+      }
+   }
+
+   return {stars: stars, destroyers: destroyers};
+};
+
 // null if no gem.
 Board.prototype.getGem = function(row, col) {
-   if (row < 0 || row >= this.height || col < 0 || col >= this.width) {
+   if (!this.inBounds(row, col)) {
       error("Gem retrieval out-of-bounds. Requested (" + row + ", " + col +
             "). Dimensions: " + this.height + " x " + this.width + ".");
       return null;
@@ -326,7 +380,7 @@ Board.prototype.moveGem = function(fromRow, fromCol, toRow, toCol) {
 //  That is a rare situation that should ONLY happen as a gem falls vertically.
 //  The lower gem should be cleared using clearGem() first.
 Board.prototype.placeGem = function(gem, row, col) {
-   if (row < 0 || row >= this.height || col < 0 || col >= this.width) {
+   if (!this.inBounds(row, col)) {
       error("Gem placement out-of-bounds. Requested (" + row + ", " + col +
             "). Dimensions: " + this.height + " x " + this.width + ".");
       return false;
@@ -347,7 +401,7 @@ Board.prototype.placeGem = function(gem, row, col) {
 // This should be the ONLY way that gems are cleared from the board.
 // It is an error to try to remove a gem that doesn't exist.
 Board.prototype.clearGem = function(row, col) {
-   if (row < 0 || row >= this.height || col < 0 || col >= this.width) {
+   if (!this.inBounds(row, col)) {
       error("Gem removal out-of-bounds. Requested (" + row + ", " + col +
             "). Dimensions: " + this.height + " x " + this.width + ".");
       return null;
