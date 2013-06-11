@@ -1,7 +1,6 @@
 <html>
    <head>
       <title>SPF</title>
-      <link rel="stylesheet" type="text/css" media="all" href="css/general.css">
       <link rel="stylesheet" type="text/css" media="all" href="css/board.css">
       <link rel="stylesheet" type="text/css" media="all" href="css/gem.css">
 

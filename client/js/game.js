@@ -4,7 +4,7 @@
 Game.DROP_TIME = 750;
 Game.UNSUPPORTED_DROP_TIME = 750;
 Game.DESTROY_TIME = 500;
-Game.NEXT_GEM_WAIT_TIME = 500;
+Game.NEXT_GEM_WAIT_TIME = 100;
 
 Game.STATE_START = 0;
 Game.STATE_PAUSE = 1;
@@ -71,8 +71,7 @@ Game.prototype.controlledDropComplete = function() {
 };
 
 Game.prototype.dropNow = function() {
-   // TODO(eriq)
-   console.log('TODO: drop now');
+   this.playerBoard.advanceDropGroupFull();
 };
 
 Game.prototype.goLeft = function() {
@@ -100,7 +99,6 @@ Game.prototype.changeOrientation = function() {
    }
 };
 
-// TODO(eriq)
 Game.prototype.gameTick = function() {
    var now = Date.now();
 

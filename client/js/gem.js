@@ -1,3 +1,5 @@
+Gem.DESTROYER_CHANCE = 0.10;
+
 Gem.TYPE_NORMAL = 0;
 Gem.TYPE_DESTROYER = 1;
 Gem.TYPE_LOCKED = 2;
@@ -87,6 +89,18 @@ function orientationDelta(orientation) {
 }
 
 // TODO(eriq): Get seed from server.
+// There is a constant chance that the gem will be a destroyer.
 function nextGem() {
-   return new NormalGem(Math.floor(Math.random() * Gem.NUM_COLORS));
+   var color = Math.floor(Math.random() * Gem.NUM_COLORS);
+
+   // TEST
+   var rand = Math.random();
+
+   if (rand <= Gem.DESTROYER_CHANCE) {
+      // TEST
+      console.log("DEST");
+      return new Destroyer(color);
+   } else {
+      return new NormalGem(color);
+   }
 }

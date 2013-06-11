@@ -80,6 +80,16 @@ Board.prototype.getDropGemLocations = function() {
    return {first: firstGem, second: secondGem};
 };
 
+// Drop the drop group all the way.
+Board.prototype.advanceDropGroupFull = function() {
+   // Note(eriq): This is fairly inefficient (moving by one each time).
+   while (this.moveDropGroup(1, 0)) {}
+
+   dropComplete();
+   this.dropGroup = null;
+   this.dropGroupLocation = null;
+};
+
 Board.prototype.advanceDropGroup = function() {
    if (!this.moveDropGroup(1, 0)) {
       // TODO(eriq): Make sure

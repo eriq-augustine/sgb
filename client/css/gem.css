@@ -1,15 +1,35 @@
-.gem-0 {
+.gem {
+   background-image: url('../images/gems.png');
+}
+
+.gem-normal-0 {
    background-position: 0px 0px;
 }
 
-.gem-1 {
+.gem-normal-1 {
    background-position: 0px -20px;
 }
 
-.gem-2 {
+.gem-normal-2 {
    background-position: 0px -40px;
 }
 
-.gem-3 {
+.gem-normal-3 {
    background-position: 0px -60px;
+}
+
+.gem-destroyer-0 {
+   background-position: 0px -100px;
+}
+
+.gem-destroyer-1 {
+   background-position: 0px -120px;
+}
+
+.gem-destroyer-2 {
+   background-position: 0px -140px;
+}
+
+.gem-destroyer-3 {
+   background-position: 0px -160px;
 }
