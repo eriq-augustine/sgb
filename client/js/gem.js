@@ -1,3 +1,4 @@
+Gem.STAR_CHANCE = 0.20;
 Gem.DESTROYER_CHANCE = 0.20;
 
 Gem.TYPE_NORMAL = 0;
@@ -93,7 +94,11 @@ function orientationDelta(orientation) {
 function nextGem() {
    var color = Math.floor(Math.random() * Gem.NUM_COLORS);
 
-   if (Math.random() <= Gem.DESTROYER_CHANCE) {
+   var rand = Math.random();
+
+   if (rand <= Gem.STAR_CHANCE) {
+      return new Star();
+   } else if (rand <= Gem.DESTROYER_CHANCE) {
       return new Destroyer(color);
    } else {
       return new NormalGem(color);

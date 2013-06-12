@@ -157,13 +157,15 @@ InternalRenderer.prototype.renderCell = function(boardId, row, col) {
    cell.attr('class', cell.attr('class').replace(/gem?\S*/g, ''));
 
    if (gem) {
-      // TODO(eriq): Need more complete naming scheme for other types.
       switch (gem.type) {
          case Gem.TYPE_NORMAL:
             cell.addClass('gem gem-normal-' + gem.color);
             break;
          case Gem.TYPE_DESTROYER:
             cell.addClass('gem gem-destroyer-' + gem.color);
+            break;
+         case Gem.TYPE_STAR:
+            cell.addClass('gem gem-star');
             break;
          default:
             error('Unknown gem type: ' + gem.type);

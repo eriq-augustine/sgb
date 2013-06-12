@@ -355,12 +355,20 @@ Board.prototype.attemptDestroy = function() {
    var toDestroy = {};
 
    // Handle stars
-   destroyers.stars.forEach(function(star) {
+   for (var i = 0; i < destroyers.stars.length; i++) {
+      var star = destroyers.stars[i];
       toDestroy[(star.row * this.width) + star.col] = true;
 
       // Check the bellow gem for color.
-      if (this.inBounds(star.row - 1, star.col)) {
-         var gem = this.getGem(star.row - 1, star.col);
+      if (this.inBounds(star.row + 1, star.col)) {
+         var gem = this.getGem(star.row + 1, star.col);
+
+         // Depending on the rules of the game, it may be possible to have
+         //  two stars out at a time. In this case, just don't do anthing
+         //  with the upper star, the lower one will take care of the work.
+         if (gem.type === Gem.TYPE_STAR) {
+            continue;
+         }
 
          if (!gem) {
             error('Tried to destroy with a star before a full drop.');
@@ -374,7 +382,7 @@ Board.prototype.attemptDestroy = function() {
          // Just destroy the gem.
          // NOTE(eriq): This should accumulate extra points.
       }
-   }, this);
+   }
 
    // Handle standard destroyers.
    destroyers.destroyers.forEach(function(destroyer) {
@@ -447,9 +455,9 @@ Board.prototype.collectByColor = function() {
 
    for (var i = 0; i < this.height; i++) {
       for (var j = 0; j < this.width; j++) {
-         var gem = getGem(i, j);
+         var gem = this.getGem(i, j);
 
-         if (gem) {
+         if (gem && gem.type !== Gem.TYPE_STAR) {
             gems[gem.color].push({row: i, col: j, gem: gem});
          }
       }
