@@ -16,7 +16,9 @@ Game.STATE_TRY_DESTROY = 4;
 Game.STATE_NEXT_GEM = 5;
 Game.STATE_PUNISHMENT = 6;
 Game.STATE_DONE = 7;
-Game.NUM_STATES = 8;
+Game.STATE_LOSE = 8;
+Game.STATE_WIN = 9;
+Game.NUM_STATES = 10;
 
 // Provide controled access to spf variables.
 function spfGet(key) {
@@ -48,6 +50,10 @@ function spfRemove(key) {
 // Static access to the game.
 function dropComplete() {
    spfGet('_game_').controlledDropComplete();
+}
+
+function loseGame() {
+   spfGet('_game_').lose();
 }
 
 function Game() {
@@ -156,6 +162,18 @@ Game.prototype.stop = function() {
    this.state = Game.STATE_DONE;
    this.logicWorker.postMessage('stop');
    stopRenderer();
+};
+
+Game.prototype.lose = function() {
+   // TODO(eriq): Display some message.
+   console.log('You Lose!');
+
+   this.stop();
+   this.state = Game.STATE_LOSE;
+};
+
+Game.prototype.win = function() {
+   // TODO(eriq): Display some message.
 };
 
 document.addEventListener('DOMContentLoaded', function() {

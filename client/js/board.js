@@ -50,12 +50,17 @@ function Board(id, height, width) {
    requestInitBoard(this.id);
 }
 
-// TODO(eriq): This is where end game is checked for (one of two places).
+// TODO(eriq): Also check end game during punishment.
 Board.prototype.releaseGem = function() {
    this.dropGroup = new DropGroup();
    this.dropGroupLocation = {row: 0, col: this.DROP_COLUMN}
 
    var delta = orientationDelta(this.dropGroup.orientation);
+
+   if (this.getGem(0, this.DROP_COLUMN) || this.getGem(1, this.DROP_COLUMN)) {
+      loseGame();
+      return false;
+   }
 
    this.placeGem(this.dropGroup.firstGem,
                  this.dropGroupLocation.row,
@@ -63,6 +68,8 @@ Board.prototype.releaseGem = function() {
    this.placeGem(this.dropGroup.secondGem,
                  this.dropGroupLocation.row + delta.row,
                  this.dropGroupLocation.col + delta.col);
+
+   return true;
 };
 
 Board.prototype.getDropGemLocations = function() {
@@ -205,7 +212,6 @@ Board.prototype.changeDropOrientation = function() {
    }
 };
 
-// TODO(eriq): Rotating into -1 breaks.
 Board.prototype.changeDropOrientationImpl = function(clockwise, pivot) {
    if (pivot < 0 || pivot >= DropGroup.NUM_PIVOTS) {
       error("Invalid pivot (" + pivot + ").");
