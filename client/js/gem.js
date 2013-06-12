@@ -1,4 +1,4 @@
-Gem.DESTROYER_CHANCE = 0.10;
+Gem.DESTROYER_CHANCE = 0.20;
 
 Gem.TYPE_NORMAL = 0;
 Gem.TYPE_DESTROYER = 1;
@@ -93,12 +93,7 @@ function orientationDelta(orientation) {
 function nextGem() {
    var color = Math.floor(Math.random() * Gem.NUM_COLORS);
 
-   // TEST
-   var rand = Math.random();
-
-   if (rand <= Gem.DESTROYER_CHANCE) {
-      // TEST
-      console.log("DEST");
+   if (Math.random() <= Gem.DESTROYER_CHANCE) {
       return new Destroyer(color);
    } else {
       return new NormalGem(color);

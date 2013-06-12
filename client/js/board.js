@@ -342,10 +342,120 @@ Board.prototype.dropUnsupported = function() {
    return dropped;
 };
 
+// NOTE(eriq): There are many inefficiencies in this.
 Board.prototype.attemptDestroy = function() {
    var destroyers = this.collectDestroyers();
 
-   // TODO(eriq): HERE
+   var gemsByColor = null;
+   if (destroyers.stars.length > 0) {
+      gemsByColor = this.collectByColor();
+   }
+
+   // Keep a map and not a list so there are no dupes {(row * this.width + col): true}.
+   var toDestroy = {};
+
+   // Handle stars
+   destroyers.stars.forEach(function(star) {
+      toDestroy[(star.row * this.width) + star.col] = true;
+
+      // Check the bellow gem for color.
+      if (this.inBounds(star.row - 1, star.col)) {
+         var gem = this.getGem(star.row - 1, star.col);
+
+         if (!gem) {
+            error('Tried to destroy with a star before a full drop.');
+            return 0;
+         }
+
+         gemsByColor[gem.color].forEach(function(colorGem) {
+            toDestroy[(colorGem.row * this.width) + colorGem.col] = true;
+         }, this);
+      } else {
+         // Just destroy the gem.
+         // NOTE(eriq): This should accumulate extra points.
+      }
+   }, this);
+
+   // Handle standard destroyers.
+   destroyers.destroyers.forEach(function(destroyer) {
+      var connectedGems = this.getConnectedByColor(destroyer.row, destroyer.col);
+      if (connectedGems.length > 1) {
+         connectedGems.forEach(function(gem) {
+            toDestroy[(gem.row * this.width) + gem.col] = true;
+         }, this);
+      }
+   }, this);
+
+   var destroyed = 0;
+
+   // TODO(eriq): Fancy animation.
+   for (var index in toDestroy) {
+      this.clearGem(Math.floor(index / this.width), index - (Math.floor(index / this.width) * this.width));
+      destroyed++;
+   }
+
+   return destroyed;
+};
+
+// This will also get the starting gem.
+// Returns a list of gems: [{gem: <gem>, row: <row>, col: <col>}].
+Board.prototype.getConnectedByColor = function(sourceRow, sourceCol) {
+   var sourceGem = this.getGem(sourceRow, sourceCol);
+
+   if (!sourceGem) {
+      error('There is no source gem.');
+      return null;
+   }
+
+   var gems = {};
+   gems[(sourceRow * this.width) + sourceCol] = {gem: sourceGem, row: sourceRow, col: sourceCol};
+   var searchStack = [{row: sourceRow, col: sourceCol}];
+
+   var offsets = [{row: 1, col: 0}, {row: -1, col: 0}, {row: 0, col: 1}, {row: 0, col: -1}];
+
+   while (searchStack.length > 0) {
+      var searchSpot = searchStack.pop();
+
+      offsets.forEach(function(offset) {
+         var row = searchSpot.row + offset.row;
+         var col = searchSpot.col + offset.col;
+
+         if (this.inBounds(row, col) && !(((row * this.width) + col) in gems)) {
+            var gem = this.getGem(row, col);
+            if (gem && gem.color === sourceGem.color) {
+               searchStack.push({row: row, col: col});
+               gems[(row * this.width) + col] = {gem: gem, row: row, col: col};
+            }
+         }
+      }, this);
+   }
+
+   var rtn = [];
+   for (var index in gems) {
+      rtn.push(gems[index]);
+   }
+
+   return rtn;
+};
+
+Board.prototype.collectByColor = function() {
+   var gems = {};
+
+   for (var color = 0; color < Gem.NUM_COLORS; color++) {
+      gems[color] = [];
+   }
+
+   for (var i = 0; i < this.height; i++) {
+      for (var j = 0; j < this.width; j++) {
+         var gem = getGem(i, j);
+
+         if (gem) {
+            gems[gem.color].push({row: i, col: j, gem: gem});
+         }
+      }
+   }
+
+   return gems;
 };
 
 Board.prototype.collectDestroyers = function() {
