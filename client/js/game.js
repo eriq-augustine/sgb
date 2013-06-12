@@ -15,7 +15,8 @@ Game.STATE_UNCONTROLLED_DROP = 3;
 Game.STATE_TRY_DESTROY = 4;
 Game.STATE_NEXT_GEM = 5;
 Game.STATE_PUNISHMENT = 6;
-Game.NUM_STATES = 7;
+Game.STATE_DONE = 7;
+Game.NUM_STATES = 8;
 
 // Provide controled access to spf variables.
 function spfGet(key) {
@@ -54,7 +55,6 @@ function Game() {
    this.logicWorker.onmessage = function(evt) {
       spfGet('_game_').gameTick();
    };
-   this.logicWorker.postMessage('start');
 
    this.state = Game.STATE_START;
    this.lastDrop = 0;
@@ -103,6 +103,8 @@ Game.prototype.gameTick = function() {
    var now = Date.now();
 
    switch (this.state) {
+      case Game.STATE_START:
+         break;
       case Game.STATE_CONTROLLED_DROP:
          if (now - this.lastDrop >= Game.DROP_TIME) {
             this.goDown();
@@ -136,12 +138,24 @@ Game.prototype.gameTick = function() {
             this.state = Game.STATE_CONTROLLED_DROP;
          }
          break;
+      case Game.STATE_DONE:
+         break;
+      default:
+         error('Unsupported game state: ' + this.state);
+         break;
    }
 };
 
 Game.prototype.start = function() {
    this.lastDrop = Date.now();
    this.state = Game.STATE_NEXT_GEM;
+   this.logicWorker.postMessage('start');
+};
+
+Game.prototype.stop = function() {
+   this.state = Game.STATE_DONE;
+   this.logicWorker.postMessage('stop');
+   stopRenderer();
 };
 
 document.addEventListener('DOMContentLoaded', function() {
