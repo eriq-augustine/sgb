@@ -32,6 +32,9 @@ function Board(id, height, width) {
    this.height = height;
    this.width = width;
 
+   // TODO(eriq): Keep track of the opponents character (drop pattern).
+   this.punishements = 0;
+
    this.dropGroup = null;
    // TODO(eriq): Should the gem maintain it's own location?
    // The location of the first gem in the drop group.
@@ -49,6 +52,10 @@ function Board(id, height, width) {
    addBoard(this);
    requestInitBoard(this.id);
 }
+
+Board.prototype.addPunishments = function(number) {
+   this.punishments += number;
+};
 
 // TODO(eriq): Also check end game during punishment.
 Board.prototype.releaseGem = function() {
