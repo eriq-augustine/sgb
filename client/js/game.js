@@ -177,6 +177,7 @@ Game.prototype.win = function() {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
+   spfSet('debug', true);
    spfSet('_game_', new Game());
 });
 
