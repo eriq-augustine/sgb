@@ -1,7 +1,15 @@
 package main;
 
-import "com/eriqaugustine/spf/server";
+import (
+   "net/http"
+   "code.google.com/p/go.net/websocket"
+   "com/eriqaugustine/spf/server"
+);
 
 func main() {
-   server.ExampleHandler();
+   http.Handle("/testsocket", websocket.Handler(server.GameServer));
+   err := http.ListenAndServe(":12345", nil);
+   if err != nil {
+      panic("ListenAndServe: " + err.Error());
+   }
 }
