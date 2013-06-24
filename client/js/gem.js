@@ -33,33 +33,63 @@ function Gem(type) {
    this.count = gemCount++;
 }
 
-function NormalGem(color) {
-   Gem.call(this, Gem.TYPE_NORMAL);
+// All gems can be hashed which will aid in creating a hash of the board.
+// The hash schedme is fairly simplistic.
+Gem.prototype.hash = function() {
+   return 'gem-' + this.type;
+};
+
+function ColorGem(type, color) {
+   Gem.call(this, type);
    this.color = color;
 }
-NormalGem.prototype = new Gem();
+ColorGem.prototype = new Gem();
+ColorGem.prototype.constructor = ColorGem;
+
+ColorGem.prototype.hash = function() {
+   return Gem.prototype.hash.call(this) + '-color-' + this.color;
+};
+
+// The standard style gem.
+function NormalGem(color) {
+   ColorGem.call(this, Gem.TYPE_NORMAL, color);
+}
+NormalGem.prototype = new ColorGem();
 NormalGem.prototype.constructor = NormalGem;
 
+// Standard destroyers.
 function Destroyer(color) {
-   Gem.call(this, Gem.TYPE_DESTROYER);
-   this.color = color;
+   ColorGem.call(this, Gem.TYPE_DESTROYER, color);
 }
-Destroyer.prototype = new Gem();
+Destroyer.prototype = new ColorGem();
 Destroyer.prototype.constructor = Destroyer;
 
+Destroyer.prototype.hash = function() {
+   return ColorGem.prototype.hash.call(this) + '-destroyer';
+};
+
+// A locked gem, keeps track of its own counter.
 function LockedGem(color) {
-   Gem.call(this, Gem.TYPE_LOCKED);
-   this.color = color;
+   ColorGem.call(this, Gem.TYPE_LOCKED, color);
    this.counter = Gem.MAX_COUNTER;
 }
-LockedGem.prototype = new Gem();
+LockedGem.prototype = new ColorGem();
 LockedGem.prototype.constructor = LockedGem;
 
+LockedGem.prototype.hash = function() {
+   return ColorGem.prototype.hash.call(this) + '-locked-' + this.counter;
+};
+
+// Destroyers all of the color it lands on.
 function Star() {
    Gem.call(this, Gem.TYPE_STAR);
 }
 Star.prototype = new Gem();
 Star.prototype.constructor = Star;
+
+Star.prototype.hash = function() {
+   return Gem.prototype.hash.call(this) + '-star';
+};
 
 // TODO(eriq): construct from message
 function DropGroup() {

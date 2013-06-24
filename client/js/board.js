@@ -45,10 +45,10 @@ function Board(id, height, width, nextDropGroup) {
    this._nextDropGroup_ = nextDropGroup;
 
    this._board_ = [];
-   for (var i = 0; i < height; i++) {
+   for (var i = 0; i < this.height; i++) {
       this._board_[i] = [];
 
-      for (var j = 0; j < width; j++) {
+      for (var j = 0; j < this.width; j++) {
          this._board_[i][j] = null;
       }
    }
@@ -59,6 +59,25 @@ function Board(id, height, width, nextDropGroup) {
 
 Board.prototype.addPunishments = function(number) {
    this.punishments += number;
+};
+
+Board.prototype.hash = function() {
+   var gemHashes = [];
+   var gem = null;
+
+   for (var i = 0; i < this.height; i++) {
+      for (var j = 0; j < this.width; j++) {
+         gem = this.getGem(i, j);
+
+         if (gem) {
+            gemHashes.push(gem.hash());
+         } else {
+            gemHashes.push('0');
+         }
+      }
+   }
+
+   return md5(gemHashes.join());
 };
 
 // TODO(eriq): Also check end game during punishment.
