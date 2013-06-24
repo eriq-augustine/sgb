@@ -174,7 +174,9 @@ InternalRenderer.prototype.renderCell = function(boardId, row, col) {
 InternalRenderer.prototype.renderGem = function(gemRenderId, gem) {
    var cell = $('#' + gemRenderId);
    // Remove all gem related classes.
-   cell.attr('class', cell.attr('class').replace(/gem?\S*/g, ''));
+   if (cell.attr('class')) {
+      cell.attr('class', cell.attr('class').replace(/gem?\S*/g, ''));
+   }
 
    if (gem) {
       switch (gem.type) {

@@ -39,6 +39,7 @@ Socket.prototype.onMessage = function(messageEvent) {
                     new DropGroup(message.Payload.Drops[1])]);
          break;
       case Message.TYPE_NEXT_DROP:
+         enqueueGem(new DropGroup(message.Payload.Drop));
          break;
       case Message.TYPE_PUNISHMENT:
          break;

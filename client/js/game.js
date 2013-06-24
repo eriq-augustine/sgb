@@ -62,6 +62,10 @@ function startGame(dropGroups) {
    spfGet('_game_').start(dropGroups);
 }
 
+function enqueueDropGroup(dropGroup) {
+   spfGet('_game_').enqueueDrop(dropGroup);
+}
+
 function Game() {
    this.logicWorker = new Worker("js/logicTimer.js");
    this.logicWorker.onmessage = function(evt) {
@@ -152,12 +156,16 @@ Game.prototype.gameTick = function() {
          }
          break;
       case Game.STATE_NEXT_GEM:
-         if (now - this.lastDrop >= Game.NEXT_GEM_WAIT_TIME) {
-            this.lastDrop = now;
-            // TODO(eriq): Deal with the situation where the sever
-            //  has not given the next group yet.
-            this.playerBoard.releaseGem(this.dropQueue.shift());
-            this.state = Game.STATE_CONTROLLED_DROP;
+         // TODO(eriq): Send a request to the server for the next gem.
+         // If there is not enough gems in the queue, then wait for the next gem to appear.
+         if (this.dropQueue.length > 0) {
+            if (now - this.lastDrop >= Game.NEXT_GEM_WAIT_TIME) {
+               this.lastDrop = now;
+               // TODO(eriq): Deal with the situation where the sever
+               //  has not given the next group yet.
+               this.playerBoard.releaseGem(this.dropQueue.shift());
+               this.state = Game.STATE_CONTROLLED_DROP;
+            }
          }
          break;
       case Game.STATE_DONE:
@@ -172,7 +180,7 @@ Game.prototype.start = function(dropGroups) {
    this.playerBoard = new Board('js-player-board', 13, 6, dropGroups[0]);
    this.opponentBoard = new Board('js-opponent-board', 13, 6, dropGroups[0]);
 
-   this.dropQueue.push(dropGroups[1]);
+   this.enqueueDrop(dropGroups[1]);
 
    this.lastDrop = Date.now();
    this.state = Game.STATE_NEXT_GEM;
@@ -195,6 +203,10 @@ Game.prototype.lose = function() {
 
 Game.prototype.win = function() {
    // TODO(eriq): Display some message.
+};
+
+Game.prototype.enqueueDrop = function(dropGroup) {
+   this.dropQueue.push(dropGroup);
 };
 
 document.addEventListener('DOMContentLoaded', function() {
