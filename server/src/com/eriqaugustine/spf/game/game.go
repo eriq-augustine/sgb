@@ -18,7 +18,9 @@ type Game struct {
 
    rand *rand.Rand;
 
-   gems []Gem;
+   dropGroups [][2]Gem;
+
+   playerDropCursors [2]int;
 };
 
 func NewGame(player1 int, player2 int) *Game {
@@ -29,14 +31,20 @@ func NewGame(player1 int, player2 int) *Game {
    game.Id = nextId;
    game.Players = [2]int{player1, player2};
    game.rand = rand.New(rand.NewSource(time.Now().UnixNano()));
-   game.gems = make([]Gem, 100);
+   game.dropGroups = make([][2]Gem, 0);
+   game.playerDropCursors = [2]int{0, 0};
 
    return game;
 }
 
 func (this *Game) nextDrop(playerOrdinal int) [2]Gem {
-   // TODO;
-   return [2]Gem{Gem{0, 0, 0}, Gem{1, 1, 1}};
+   if this.playerDropCursors[playerOrdinal] == len(this.dropGroups) {
+      this.dropGroups =
+         append(this.dropGroups, [2]Gem{NewGem(this.rand), NewGem(this.rand)});
+   }
+
+   this.playerDropCursors[playerOrdinal]++;
+   return this.dropGroups[this.playerDropCursors[playerOrdinal] - 1];
 }
 
 func (this *Game) NextPlayer1Drop() [2]Gem {

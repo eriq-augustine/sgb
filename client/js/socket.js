@@ -1,23 +1,56 @@
 "use strict";
 
-function loadSocket() {
-   var ws = new WebSocket("ws://localhost:12345/testsocket");
-   //var ws = new WebSocket("ws://50.131.15.127:7070/websocket");
+Socket.SERVER = 'ws://localhost:12345/testsocket';
 
-   ws.onmessage = onMessage;
-   ws.onclose = onClose;
-   ws.onopen = onOpen;
-   ws.onerror = onError;
+Socket.MESSAGE_TYPE_INIT = 0;
+Socket.MESSAGE_TYPE_START = 1;
+Socket.MESSAGE_TYPE_MOVE = 2;
+Socket.MESSAGE_TYPE_NEXT_DROP = 3;
+Socket.MESSAGE_TYPE_PUNISHMENT = 4;
+Socket.MESSAGE_TYPE_UPDATE = 5;
+Socket.MESSAGE_TYPE_END_GAME = 6;
+Socket.NUM_MESSAGE_TYPES = 7;
 
-   window.socket = ws;
+function Socket() {
+   this.ws = new WebSocket(Socket.SERVER);
+
+   this.ws.onmessage = this.onMessage.bind(this);
+   this.ws.onclose = this.onClose.bind(this);
+   this.ws.onopen = this.onOpen.bind(this);
+   this.ws.onerror = this.onError.bind(this);
 }
 
-function onMessage(messageEvent) {
-   // TEST
-   debug("Message from server: " + messageEvent.data);
+Socket.prototype.onMessage = function(messageEvent) {
+   var message = null;
+   try {
+      message = JSON.parse(messageEvent.data);
+   } catch (ex) {
+      error('Server message does not parse.');
+      return false;
+   }
 
-   // TODO(eriq): Catch the parse error.
-   // data = JSON.parse(messageEvent.data);
+   // TEST
+   debug(message);
+   console.log(message);
+
+   switch (message.Type) {
+      case Message.TYPE_START:
+         startGame([new DropGroup(message.Payload.Drops[0]),
+                    new DropGroup(message.Payload.Drops[1])]);
+         break;
+      case Message.TYPE_NEXT_DROP:
+         break;
+      case Message.TYPE_PUNISHMENT:
+         break;
+      case Message.TYPE_UPDATE:
+         break;
+      case Message.TYPE_END_GAME:
+         break;
+      default:
+         // Note: There are messages that are known, but just not expected from the server.
+         error('Unknown Message Type: ' + message.Type);
+         break;
+   }
 
 /*
    if (data.type == 'ack' && data.status == 'ok') {
@@ -35,23 +68,20 @@ function onMessage(messageEvent) {
       }
    }
 */
-}
+};
 
-function onClose(messageEvent) {
+Socket.prototype.onClose = function(messageEvent) {
    //console.log("Connection to server closed: " + JSON.stringify(messageEvent));
    debug("Connection to server closed.");
-}
+};
 
-function onOpen(messageEvent) {
+Socket.prototype.onOpen = function(messageEvent) {
    //console.log("Connection to server opened: " + JSON.stringify(messageEvent));
    debug("Connection to server opened.");
-}
 
-function onError(messageEvent) {
+   this.ws.send(createInitMessage());
+};
+
+Socket.prototype.onError = function(messageEvent) {
    debug(JSON.stringify(messageEvent));
-}
-
-// TEST
-document.addEventListener('DOMContentLoaded', function() {
-   loadSocket();
-});
+};

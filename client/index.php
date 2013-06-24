@@ -11,8 +11,9 @@
       <script type="text/javascript" src="js/animation.js"></script>
       <script type="text/javascript" src="js/render.js"></script>
       <script type="text/javascript" src="js/md5.js"></script>
-      <script type="text/javascript" src="js/game.js"></script>
+      <script type="text/javascript" src="js/message.js"></script>
       <script type="text/javascript" src="js/socket.js"></script>
+      <script type="text/javascript" src="js/game.js"></script>
    </head>
    <body>
       <div class='board'>

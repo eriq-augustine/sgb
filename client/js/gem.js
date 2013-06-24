@@ -69,9 +69,9 @@ Destroyer.prototype.hash = function() {
 };
 
 // A locked gem, keeps track of its own counter.
-function LockedGem(color) {
+function LockedGem(color, counter) {
    ColorGem.call(this, Gem.TYPE_LOCKED, color);
-   this.counter = Gem.MAX_COUNTER;
+   this.counter = counter || Gem.MAX_COUNTER;
 }
 LockedGem.prototype = new ColorGem();
 LockedGem.prototype.constructor = LockedGem;
@@ -92,12 +92,38 @@ Star.prototype.hash = function() {
 };
 
 // TODO(eriq): construct from message
-function DropGroup() {
-   this.firstGem = nextGem();
-   this.secondGem = nextGem();
+function DropGroup(marshaledGroup) {
+   if (marshaledGroup) {
+      this.firstGem = constructGem(marshaledGroup[0]);
+      this.secondGem = constructGem(marshaledGroup[1]);
+   } else {
+      debug('Attempting to create a drop group from nothing.');
+      this.firstGem = nextGem();
+      this.secondGem = nextGem();
+   }
 
    // Orientation is always from first to second.
    this.orientation = DropGroup.ORIENTATION_DOWN;
+}
+
+function constructGem(marshaledGem) {
+   switch (marshaledGem.Type) {
+      case Gem.TYPE_NORMAL:
+         return new NormalGem(marshaledGem.Color);
+         break;
+      case Gem.TYPE_DESTROYER:
+         return new Destroyer(marshaledGem.Color);
+         break;
+      case Gem.TYPE_LOCKED:
+         return new LockedGem(marshaledGem.Color, marshaledGem.Timer);
+         break;
+      case Gem.TYPE_STAR:
+         return new Star();
+         break;
+      default:
+         error('Unknown gem type: ' + marshaledGem.Type);
+         return null;
+   }
 }
 
 function orientationDelta(orientation) {

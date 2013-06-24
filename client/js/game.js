@@ -6,19 +6,21 @@ Game.UNSUPPORTED_DROP_TIME = 500;
 Game.DESTROY_TIME = 250;
 Game.NEXT_GEM_WAIT_TIME = 100;
 
-Game.STATE_START = 0;
-Game.STATE_PAUSE = 1;
-Game.STATE_CONTROLLED_DROP = 2;
-Game.STATE_UNCONTROLLED_DROP = 3;
+// Wait for the server to schedule a start.
+Game.STATE_INIT = 0;
+Game.STATE_START = 1;
+Game.STATE_PAUSE = 2;
+Game.STATE_CONTROLLED_DROP = 3;
+Game.STATE_UNCONTROLLED_DROP = 4;
 // The DESTROY state is just a transition between when some gems are destroyed,
 //  and when the next unsupported drop will attempt.
-Game.STATE_TRY_DESTROY = 4;
-Game.STATE_NEXT_GEM = 5;
-Game.STATE_PUNISHMENT = 6;
-Game.STATE_DONE = 7;
-Game.STATE_LOSE = 8;
-Game.STATE_WIN = 9;
-Game.NUM_STATES = 10;
+Game.STATE_TRY_DESTROY = 5;
+Game.STATE_NEXT_GEM = 6;
+Game.STATE_PUNISHMENT = 7;
+Game.STATE_DONE = 8;
+Game.STATE_LOSE = 9;
+Game.STATE_WIN = 10;
+Game.NUM_STATES = 11;
 
 // Provide controled access to spf variables.
 function spfGet(key) {
@@ -56,22 +58,29 @@ function loseGame() {
    spfGet('_game_').lose();
 }
 
+function startGame(dropGroups) {
+   spfGet('_game_').start(dropGroups);
+}
+
 function Game() {
    this.logicWorker = new Worker("js/logicTimer.js");
    this.logicWorker.onmessage = function(evt) {
       spfGet('_game_').gameTick();
    };
 
-   this.state = Game.STATE_START;
+   this.state = Game.STATE_INIT;
    this.lastDrop = 0;
+
+   // Keep track of the drops in waiting.
+   // The board is only allowed to know about the current and next drop.
+   this.dropQueue = [];
 
    initRenderer();
 
-   // TODO(eriq): Get nextdrop group from server
-   var tempDrop = new DropGroup();
+   this.socket = new Socket();
 
-   this.playerBoard = new Board('js-player-board', 13, 6, tempDrop);
-   this.opponentBoard = new Board('js-opponent-board', 13, 6, tempDrop);
+   this.playerBoard = null;
+   this.opponentBoard = null;
 }
 
 Game.prototype.controlledDropComplete = function() {
@@ -112,6 +121,8 @@ Game.prototype.gameTick = function() {
    var now = Date.now();
 
    switch (this.state) {
+      case Game.STATE_INIT:
+         break;
       case Game.STATE_START:
          break;
       case Game.STATE_CONTROLLED_DROP:
@@ -143,9 +154,9 @@ Game.prototype.gameTick = function() {
       case Game.STATE_NEXT_GEM:
          if (now - this.lastDrop >= Game.NEXT_GEM_WAIT_TIME) {
             this.lastDrop = now;
-            // TODO(eriq): Get the next gem from the server. Wait until the gem arrives to release.
-            var tempDrop = new DropGroup();
-            this.playerBoard.releaseGem(tempDrop);
+            // TODO(eriq): Deal with the situation where the sever
+            //  has not given the next group yet.
+            this.playerBoard.releaseGem(this.dropQueue.shift());
             this.state = Game.STATE_CONTROLLED_DROP;
          }
          break;
@@ -157,7 +168,12 @@ Game.prototype.gameTick = function() {
    }
 };
 
-Game.prototype.start = function() {
+Game.prototype.start = function(dropGroups) {
+   this.playerBoard = new Board('js-player-board', 13, 6, dropGroups[0]);
+   this.opponentBoard = new Board('js-opponent-board', 13, 6, dropGroups[0]);
+
+   this.dropQueue.push(dropGroups[1]);
+
    this.lastDrop = Date.now();
    this.state = Game.STATE_NEXT_GEM;
    this.logicWorker.postMessage('start');

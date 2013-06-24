@@ -43,8 +43,14 @@ func GameServer(ws *websocket.Conn) {
       switch msgType := messagePart.(type) {
          case InitMessagePart:
             if (waitingPlayer == -1) {
+               //TEST
+               println("Player waiting");
+
                waitingPlayer = id;
             } else {
+               //TEST
+               println("New Game");
+
                var newGame *game.Game = game.NewGame(id, waitingPlayer);
                waitingPlayer = -1;
                broadcastStart(ws, newGame);
