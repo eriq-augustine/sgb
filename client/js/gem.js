@@ -61,6 +61,7 @@ function Star() {
 Star.prototype = new Gem();
 Star.prototype.constructor = Star;
 
+// TODO(eriq): construct from message
 function DropGroup() {
    this.firstGem = nextGem();
    this.secondGem = nextGem();

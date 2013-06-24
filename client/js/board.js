@@ -25,7 +25,7 @@ function removeBoard(id) {
    }
 }
 
-function Board(id, height, width) {
+function Board(id, height, width, nextDropGroup) {
    this.DROP_COLUMN = 3;
 
    this.id = id;
@@ -35,10 +35,14 @@ function Board(id, height, width) {
    // TODO(eriq): Keep track of the opponents character (drop pattern).
    this.punishements = 0;
 
+   // {firstGem: _, secondGem: _, orientation: _}
    this.dropGroup = null;
    // TODO(eriq): Should the gem maintain it's own location?
    // The location of the first gem in the drop group.
    this.dropGroupLocation = null;
+
+   // The next gem to be dropped.
+   this._nextDropGroup_ = nextDropGroup;
 
    this._board_ = [];
    for (var i = 0; i < height; i++) {
@@ -58,9 +62,8 @@ Board.prototype.addPunishments = function(number) {
 };
 
 // TODO(eriq): Also check end game during punishment.
-Board.prototype.releaseGem = function() {
-   this.dropGroup = new DropGroup();
-   this.dropGroupLocation = {row: 0, col: this.DROP_COLUMN}
+Board.prototype.releaseGem = function(newDropGroup) {
+   this.updateDropGroup(newDropGroup);
 
    var delta = orientationDelta(this.dropGroup.orientation);
 
@@ -509,10 +512,33 @@ Board.prototype.getGem = function(row, col) {
    return this._board_[row][col];
 }
 
+Board.prototype.getNextDropGroup = function() {
+   return this._nextDropGroup_;
+};
+
 // A convince function to use instead of using clearGem() then placeGem().
 Board.prototype.moveGem = function(fromRow, fromCol, toRow, toCol) {
    var gem = this.clearGem(fromRow, fromCol);
    return this.placeGem(gem, toRow, toCol);
+};
+
+// This should be the only function that modifies |_nextDropGroup_|.
+// |this.dropGroup| can be modified elsewhere.
+// In addition to advancing the next drop group to the current one,
+//  it will also update the current (previously nextDropGroup's) location.
+Board.prototype.updateDropGroup = function(newDropGroup) {
+   if (newDropGroup == null) {
+      error("A null drop group was given to the board.");
+      return false;
+   }
+
+   this.dropGroup = this._nextDropGroup_;
+   this.dropGroupLocation = {row: 0, col: this.DROP_COLUMN}
+
+   this._nextDropGroup_ = newDropGroup;
+   requestNextDropGroupRender(this.id);
+
+   return true;
 };
 
 // This is a key rendering function.

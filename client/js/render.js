@@ -82,6 +82,13 @@ function requestCellRender(boardId, row, col) {
    }
 }
 
+// Request a re-render of the next drop group display.
+function requestNextDropGroupRender(boardId) {
+   if (spfGet('_renderer_')) {
+      spfGet('_renderer_').addUpdate({type: 'nextDropGroup', boardId: boardId});
+   }
+}
+
 // The renderer class should never be accessed by anyone direclty.
 // The static calls should be used instead.
 function InternalRenderer() {
@@ -106,6 +113,9 @@ InternalRenderer.prototype.update = function() {
          case 'boardInit':
             this.initBoard(updateData.boardId);
             break;
+         case 'nextDropGroup':
+            this.renderNextDropGroup(updateData.boardId);
+            break;
          default:
             error('Unknown update type: ' + updateData.type);
             break;
@@ -115,7 +125,12 @@ InternalRenderer.prototype.update = function() {
 
 InternalRenderer.prototype.initBoard = function(boardId) {
    var board = getBoard(boardId);
-   var html = '<div class="inner-board">';
+   var html = '<div class="next-drop-group">';
+   // Default orientation is DOWN.
+   html += '<div id="' + boardId + '-next-drop-group-first" class="next-group"></div>';
+   html += '<div id="' + boardId + '-next-drop-group-second" class="next-group"></div>';
+   html += '</div>';
+   html += '<div class="inner-board">';
 
    for (var row = 0; row < board.height; row++) {
       html += '<div id="' + boardId + '-' + row + '" class="board-row board-row-' + row + '">';
@@ -145,14 +160,19 @@ InternalRenderer.prototype.renderBoard = function(boardId) {
          this.renderCell(boardId, i, j);
       }
    }
+
+   this.renderNextDropGroup(boardId);
 };
 
 // TODO(eriq): Don't break animations.
 InternalRenderer.prototype.renderCell = function(boardId, row, col) {
    var gem = getBoard(boardId).getGem(row, col);
-   var cellId = '#' + boardId + '-' + row + '-' + col;
+   var cellId = boardId + '-' + row + '-' + col;
+   this.renderGem(cellId, gem);
+};
 
-   var cell = $(cellId);
+InternalRenderer.prototype.renderGem = function(gemRenderId, gem) {
+   var cell = $('#' + gemRenderId);
    // Remove all gem related classes.
    cell.attr('class', cell.attr('class').replace(/gem?\S*/g, ''));
 
@@ -171,6 +191,13 @@ InternalRenderer.prototype.renderCell = function(boardId, row, col) {
             error('Unknown gem type: ' + gem.type);
       }
    }
+};
+
+InternalRenderer.prototype.renderNextDropGroup = function(boardId) {
+   var dropGroup = getBoard(boardId).getNextDropGroup();
+
+   this.renderGem(boardId + '-next-drop-group-first', dropGroup.firstGem);
+   this.renderGem(boardId + '-next-drop-group-second', dropGroup.secondGem);
 };
 
 InternalRenderer.prototype.start = function() {

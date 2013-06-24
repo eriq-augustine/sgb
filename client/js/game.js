@@ -67,8 +67,11 @@ function Game() {
 
    initRenderer();
 
-   this.playerBoard = new Board('js-player-board', 13, 6);
-   this.opponentBoard = new Board('js-opponent-board', 13, 6);
+   // TODO(eriq): Get nextdrop group from server
+   var tempDrop = new DropGroup();
+
+   this.playerBoard = new Board('js-player-board', 13, 6, tempDrop);
+   this.opponentBoard = new Board('js-opponent-board', 13, 6, tempDrop);
 }
 
 Game.prototype.controlledDropComplete = function() {
@@ -140,7 +143,9 @@ Game.prototype.gameTick = function() {
       case Game.STATE_NEXT_GEM:
          if (now - this.lastDrop >= Game.NEXT_GEM_WAIT_TIME) {
             this.lastDrop = now;
-            this.playerBoard.releaseGem();
+            // TODO(eriq): Get the next gem from the server. Wait until the gem arrives to release.
+            var tempDrop = new DropGroup();
+            this.playerBoard.releaseGem(tempDrop);
             this.state = Game.STATE_CONTROLLED_DROP;
          }
          break;

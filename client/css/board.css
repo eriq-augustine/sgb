@@ -1,10 +1,11 @@
 .board {
    display: inline-block;
-
-   margin-left: 100px;
+   margin-left: 20px;
+   margin-right: 30px;
 }
 
 .inner-board {
+   display: inline-block;
 }
 
 .board-row {
@@ -16,6 +17,20 @@
 
    display: inline-block;
 
+   background-image: url('../images/gems.png');
+   background-position: 0px -80px;
+}
+
+.next-drop-group {
+   display: inline-block;
+   outline: solid 1px black;
+   vertical-align: top;
+   margin-right: 20px;
+}
+
+.next-group {
+   width: 20px;
+   height: 20px;
    background-image: url('../images/gems.png');
    background-position: 0px -80px;
 }
