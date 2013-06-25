@@ -31,8 +31,9 @@ func NewBoard(height int, width int) *Board {
    return gameBoard;
 }
 
-func (this *Board) advance() {
-   this.stabalize();
+// Return the number of gems destroyed.
+func (this *Board) advance() int {
+   var destroyed int = this.stabalize();
 
    // Advance any timers.
    for _, row := range this.board {
@@ -45,6 +46,8 @@ func (this *Board) advance() {
          }
       }
    }
+
+   return destroyed;
 }
 
 func (this *Board) hash() string {
@@ -66,10 +69,23 @@ func (this *Board) hash() string {
 }
 
 // Fall and destroy any blocks.
-func (this *Board) stabalize() {
-   for this.fall() || this.destroy() {
-      // Just keep falling and destroying until there is nothing left to do.
+// Return the number of gems destroyed.
+func (this *Board) stabalize() int {
+   var destroyed int = 0;
+
+   // Just keep falling and destroying until nither happens.
+   for {
+      var fell bool = this.fall();
+      var iterationDestroyed int = this.destroy();
+
+      destroyed += iterationDestroyed;
+
+      if !fell && (iterationDestroyed == 0) {
+         break;
+      }
    }
+
+   return destroyed;
 }
 
 // Return true if any pieces fell.
@@ -95,8 +111,8 @@ func (this *Board) fall() bool {
    return dropped;
 }
 
-// Return true if any piece was destroyed.
-func (this *Board) destroy() bool {
+// Return the number of gems that were destroyed.
+func (this *Board) destroy() int {
    // Keep a map (not list (dupes)) of gems to be destroyed
    // {location: true};
    var toDestroy map[location]bool = make(map[location]bool);
@@ -141,7 +157,7 @@ func (this *Board) destroy() bool {
       this.clearGem(destroyLocation.row, destroyLocation.col);
    }
 
-   return len(toDestroy) != 0;
+   return len(toDestroy);
 }
 
 func (this *Board) collectColors(colors map[int]bool) *[]location {

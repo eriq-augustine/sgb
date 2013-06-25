@@ -30,7 +30,6 @@ Socket.prototype.onMessage = function(messageEvent) {
    }
 
    // TEST
-   debug(message);
    console.log(message);
 
    switch (message.Type) {

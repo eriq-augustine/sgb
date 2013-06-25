@@ -89,6 +89,12 @@ function requestNextDropGroupRender(boardId) {
    }
 }
 
+function requestPunishmentRender(boardId) {
+   if (spfGet('_renderer_')) {
+      spfGet('_renderer_').addUpdate({type: 'punishments', boardId: boardId});
+   }
+}
+
 // The renderer class should never be accessed by anyone direclty.
 // The static calls should be used instead.
 function InternalRenderer() {
@@ -116,6 +122,9 @@ InternalRenderer.prototype.update = function() {
          case 'nextDropGroup':
             this.renderNextDropGroup(updateData.boardId);
             break;
+         case 'punishments':
+            this.renderPunishments(updateData.boardId);
+            break;
          default:
             error('Unknown update type: ' + updateData.type);
             break;
@@ -125,11 +134,22 @@ InternalRenderer.prototype.update = function() {
 
 InternalRenderer.prototype.initBoard = function(boardId) {
    var board = getBoard(boardId);
-   var html = '<div class="next-drop-group">';
+   var html = '<div class="board-area">';
+
+   html += '<div class="board-meta-area">';
+
+   html += ' <div class="punishments">';
+   html += '  <div id="' + boardId + '-punishments-number">0</div>'
+   html += ' </div>';
+
+   html += ' <div class="next-drop-group">';
    // Default orientation is DOWN.
-   html += '<div id="' + boardId + '-next-drop-group-first" class="next-group"></div>';
-   html += '<div id="' + boardId + '-next-drop-group-second" class="next-group"></div>';
+   html += '  <div id="' + boardId + '-next-drop-group-first" class="next-group"></div>';
+   html += '  <div id="' + boardId + '-next-drop-group-second" class="next-group"></div>';
+   html += ' </div>';
+
    html += '</div>';
+
    html += '<div class="inner-board">';
 
    for (var row = 0; row < board.height; row++) {
@@ -145,7 +165,8 @@ InternalRenderer.prototype.initBoard = function(boardId) {
       html += '</div>';
    }
 
-   html += '</div>';
+   // Close inner-board and board-area
+   html += '</div></div>';
 
    $('#' + boardId).html(html);
 
@@ -162,6 +183,7 @@ InternalRenderer.prototype.renderBoard = function(boardId) {
    }
 
    this.renderNextDropGroup(boardId);
+   this.renderPunishments(boardId);
 };
 
 // TODO(eriq): Don't break animations.
@@ -189,6 +211,12 @@ InternalRenderer.prototype.renderGem = function(gemRenderId, gem) {
          case Gem.TYPE_STAR:
             cell.addClass('gem gem-star');
             break;
+         case Gem.TYPE_LOCKED:
+            if (gem.counter < 1 || gem.counter > Gem.MAX_COUNTER) {
+               error("Don't know how to render out gem with counter " + gem.counter);
+            }
+            cell.addClass('gem gem-locked-' + gem.counter);
+            break;
          default:
             error('Unknown gem type: ' + gem.type);
       }
@@ -200,6 +228,11 @@ InternalRenderer.prototype.renderNextDropGroup = function(boardId) {
 
    this.renderGem(boardId + '-next-drop-group-first', dropGroup.firstGem);
    this.renderGem(boardId + '-next-drop-group-second', dropGroup.secondGem);
+};
+
+InternalRenderer.prototype.renderPunishments = function(boardId) {
+   var punishments = getBoard(boardId).getPunishments();
+   $('#' + boardId + '-punishments-number').html(punishments);
 };
 
 InternalRenderer.prototype.start = function() {

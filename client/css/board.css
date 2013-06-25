@@ -4,6 +4,21 @@
    margin-right: 30px;
 }
 
+.board-meta-area {
+   display: inline-block;
+   vertical-align: top;
+}
+
+.punishments {
+   display: inline-block;
+   vertical-align: top;
+   outline: solid 2px black;
+   margin-right: 20px;
+   width: 2em;
+   text-align: center;
+   font-size: 24px;
+}
+
 .inner-board {
    display: inline-block;
 }

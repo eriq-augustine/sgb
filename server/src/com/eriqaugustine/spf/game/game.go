@@ -1,7 +1,6 @@
 package game;
 
 import (
-   "fmt"
    "time"
    "math/rand"
 );
@@ -105,7 +104,7 @@ func (this *Game) MoveUpdate(playerId int, locations [2][2]int, hash string) *[2
       return nil;
    }
 
-   this.boards[playerOrdinal].advance();
+   var destroyed int = this.boards[playerOrdinal].advance();
 
    var nextDrop = this.NextDropForPlayer(playerId);
    return &nextDrop;

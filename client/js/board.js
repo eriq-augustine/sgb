@@ -33,11 +33,10 @@ function Board(id, height, width, nextDropGroup) {
    this.width = width;
 
    // TODO(eriq): Keep track of the opponents character (drop pattern).
-   this.punishements = 0;
+   this._punishements_ = 0;
 
    // {firstGem: _, secondGem: _, orientation: _}
    this.dropGroup = null;
-   // TODO(eriq): Should the gem maintain it's own location?
    // The location of the first gem in the drop group.
    this.dropGroupLocation = null;
 
@@ -604,4 +603,14 @@ Board.prototype.clearGem = function(row, col) {
    requestCellRender(this.id, row, col);
 
    return tempGem;
+};
+
+Board.prototype.getPunishments = function() {
+   return this._punishements_;
+};
+
+// This is the only method allowed to modify |this._punishements_|.
+Board.prototype.modifyPunishments = function(newPunishments) {
+   this._punishements_ = newPunishments;
+   requestPunishmentRender(this.id);
 };
