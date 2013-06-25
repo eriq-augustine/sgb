@@ -535,7 +535,7 @@ Board.prototype.getNextDropGroup = function() {
    return this._nextDropGroup_;
 };
 
-// A convince function to use instead of using clearGem() then placeGem().
+// A convenience function to use instead of using clearGem() then placeGem().
 Board.prototype.moveGem = function(fromRow, fromCol, toRow, toCol) {
    var gem = this.clearGem(fromRow, fromCol);
    return this.placeGem(gem, toRow, toCol);
