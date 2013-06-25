@@ -121,7 +121,7 @@ Board.prototype.advanceDropGroupFull = function() {
    // Note(eriq): This is fairly inefficient (moving by one each time).
    while (this.moveDropGroup(1, 0)) {}
 
-   dropComplete();
+   dropComplete(this.getDropGemLocations(), this.hash());
    this.dropGroup = null;
    this.dropGroupLocation = null;
 };
@@ -129,7 +129,7 @@ Board.prototype.advanceDropGroupFull = function() {
 Board.prototype.advanceDropGroup = function() {
    if (!this.moveDropGroup(1, 0)) {
       // TODO(eriq): Make sure
-      dropComplete();
+      dropComplete(this.getDropGemLocations(), this.hash());
       this.dropGroup = null;
       this.dropGroupLocation = null;
 

@@ -31,10 +31,7 @@ type StartMessagePart struct {
 };
 
 type MoveMessagePart struct {
-   FirstRow uint;
-   FirstCol uint;
-   SecondRow uint;
-   SecondCol uint;
+   Locations [2][2]int;
    BoardHash string;
 };
 

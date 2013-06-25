@@ -50,8 +50,8 @@ function spfRemove(key) {
 }
 
 // Static access to the game.
-function dropComplete() {
-   spfGet('_game_').controlledDropComplete();
+function dropComplete(dropGemLocations, hash) {
+   spfGet('_game_').controlledDropComplete(dropGemLocations, hash);
 }
 
 function loseGame() {
@@ -87,9 +87,12 @@ function Game() {
    this.opponentBoard = null;
 }
 
-Game.prototype.controlledDropComplete = function() {
+Game.prototype.controlledDropComplete = function(dropGemLocations, hash) {
    this.lastDrop = Date.now();
    this.state = Game.STATE_UNCONTROLLED_DROP;
+
+   // Tell the server that the drop is complete.
+   this.socket.sendMove(dropGemLocations, hash);
 };
 
 Game.prototype.dropNow = function() {

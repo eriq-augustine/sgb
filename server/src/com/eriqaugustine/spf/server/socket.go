@@ -9,7 +9,11 @@ import (
 
 var connectionId int = 0;
 
+// {connection/player id => websocket}
 var connections = make(map[int]*websocket.Conn);
+
+// {connection/player id => Game}
+// Note: there are two entries per game (one per player).
 var activeGames = make(map[int]*game.Game);
 
 // TODO(eriq): queue
@@ -43,40 +47,45 @@ func GameServer(ws *websocket.Conn) {
       switch msgType := messagePart.(type) {
          case InitMessagePart:
             if (waitingPlayer == -1) {
-               //TEST
-               println("Player waiting");
-
                waitingPlayer = id;
             } else {
-               //TEST
-               println("New Game");
-
                var newGame *game.Game = game.NewGame(id, waitingPlayer);
+
+               activeGames[id] = newGame;
+               activeGames[waitingPlayer] = newGame;
+
                waitingPlayer = -1;
                broadcastStart(ws, newGame);
             }
          case MoveMessagePart:
+            var movePart, _ = messagePart.(MoveMessagePart);
+
             // TEST
             println("Move");
+
+            var dropGroup =
+               activeGames[id].MoveUpdate(id, movePart.Locations, movePart.BoardHash);
+            var message = NewMessage(MESSAGE_TYPE_NEXT_DROP,
+                                     NextDropMessagePart{dropGroup});
+
+            websocket.JSON.Send(connections[id], message);
          default:
             fmt.Println("Unknow type: ", msgType);
             continue;
       }
    }
 
+   // TODO(eriq): Verify that all the cleanup happens.
    delete(connections, id);
+   delete(activeGames, id);
 
    println("On Close");
 }
 
 func broadcastStart(ws *websocket.Conn, currentGame *game.Game) {
    // Initial drop will be the same for both players.
-   var dropSet [2][2]game.Gem = [2][2]game.Gem{
-      currentGame.NextPlayer1Drop(),
-      currentGame.NextPlayer1Drop(),
-   };
-
-   var message = NewMessage(MESSAGE_TYPE_START, StartMessagePart{dropSet});
+   var message = NewMessage(MESSAGE_TYPE_START,
+                            StartMessagePart{currentGame.InitialDrops()});
 
    for _, playerId := range currentGame.Players {
       websocket.JSON.Send(connections[playerId], message);

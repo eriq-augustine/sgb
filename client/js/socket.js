@@ -39,7 +39,7 @@ Socket.prototype.onMessage = function(messageEvent) {
                     new DropGroup(message.Payload.Drops[1])]);
          break;
       case Message.TYPE_NEXT_DROP:
-         enqueueGem(new DropGroup(message.Payload.Drop));
+         enqueueDropGroup(new DropGroup(message.Payload.Drop));
          break;
       case Message.TYPE_PUNISHMENT:
          break;
@@ -85,4 +85,8 @@ Socket.prototype.onOpen = function(messageEvent) {
 
 Socket.prototype.onError = function(messageEvent) {
    debug(JSON.stringify(messageEvent));
+};
+
+Socket.prototype.sendMove = function(dropGemLocations, boardHash) {
+   this.ws.send(createMoveMessage(dropGemLocations, boardHash));
 };
