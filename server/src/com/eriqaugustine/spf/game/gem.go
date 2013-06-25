@@ -33,9 +33,29 @@ type Gem struct {
    Timer int;
 };
 
-func (this Gem) String() string {
+func (this *Gem) String() string {
    return fmt.Sprintf("Type: %d, Color: %d, Timer: %d",
                       this.Type, this.Color, this.Timer);
+}
+
+func (this *Gem) hash() string {
+   var hash string = "gem-" + string(this.Type);
+
+   // Stars are the only gem without a color.
+   if this.Type != TYPE_STAR {
+      hash += "-color-" + string(this.Color);
+   }
+
+   switch this.Type {
+      case TYPE_DESTROYER:
+         hash += "-destroyer";
+      case TYPE_LOCKED:
+         hash += "-locked-" + string(this.Timer);
+      case TYPE_STAR:
+         hash += "-star";
+   }
+
+   return hash;
 }
 
 // All new gems will be normal ones.
