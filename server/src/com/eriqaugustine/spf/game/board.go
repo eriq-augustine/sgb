@@ -31,13 +31,29 @@ func NewBoard(height int, width int) *Board {
    return gameBoard;
 }
 
+func (this *Board) advance() {
+   this.stabalize();
+
+   // Advance any timers.
+   for _, row := range this.board {
+      for _, gem := range row {
+         if gem != nil && gem.Type == TYPE_LOCKED {
+            gem.Timer -= 1;
+            if gem.Timer == 0 {
+               gem.Type = TYPE_NORMAL;
+            }
+         }
+      }
+   }
+}
+
 func (this *Board) hash() string {
    var boardString string = "";
 
    for _, row := range this.board {
       for _, gem := range row {
          if (gem == nil) {
-            boardString += "0"
+            boardString += "_"
          } else {
             boardString += gem.hash();
          }
@@ -88,7 +104,7 @@ func (this *Board) destroy() bool {
    var destroyers *map[string][]location = this.collectDestroyers();
 
    // colors to be destroyed by stars.
-   var starColors map[int]bool;
+   var starColors map[int]bool = make(map[int]bool);
 
    // Take care of stars first.
    for _, starLocation := range (*destroyers)["stars"] {
@@ -98,7 +114,7 @@ func (this *Board) destroy() bool {
       // But, make sure that the below gem is not a star.
       if this.inBounds(starLocation.row + 1, starLocation.col) &&
          this.board[starLocation.row + 1][starLocation.col].Type != TYPE_STAR {
-         starColors[this.board[starLocation.row][starLocation.col].Color] =
+         starColors[this.board[starLocation.row + 1][starLocation.col].Color] =
             true;
       } else {
          // Just destroy the star
@@ -133,7 +149,7 @@ func (this *Board) collectColors(colors map[int]bool) *[]location {
 
    for row, boardRow := range this.board {
       for col, gem := range boardRow {
-         if gem != nil && gem.Type != TYPE_DESTROYER && colors[gem.Color] {
+         if gem != nil && gem.Type != TYPE_STAR && colors[gem.Color] {
             rtn = append(rtn, location{row, col});
          }
       }
@@ -153,20 +169,19 @@ func (this *Board) getConnectedByColor(start location) *[]location {
    var startColor int = this.board[start.row][start.col].Color;
 
    for len(searchStack) > 0 {
-      var currentLocation, searchStack =
-         searchStack[len(searchStack) - 1], searchStack[:len(searchStack) - 1];
+      var currentLocation location = searchStack[len(searchStack) - 1];
+      searchStack = searchStack[:len(searchStack) - 1];
 
       for _, offset := range offsets {
          var row int = currentLocation.row + offset[0];
          var col int = currentLocation.col + offset[1];
 
-         if this.inBounds(row, col) {
-            _, explored := locationSet[location{row, col}];
-            if !explored && this.board[row][col] != nil &&
-               this.board[row][col].Color == startColor {
+         if this.inBounds(row, col) &&
+            !locationSet[location{row, col}] &&
+            this.board[row][col] != nil &&
+            this.board[row][col].Color == startColor {
                searchStack = append(searchStack, location{row, col});
                locationSet[location{row, col}] = true;
-            }
          }
       }
    }
@@ -188,9 +203,9 @@ func (this *Board) collectDestroyers() *map[string][]location {
    for row, boardRow := range this.board {
       for col, gem := range boardRow {
          if gem != nil {
-            if gem.Type == TYPE_DESTROYER {
+            if gem.Type == TYPE_STAR {
                rtn["stars"] = append(rtn["stars"], location{row, col});
-            } else if gem.Type == TYPE_STAR {
+            } else if gem.Type == TYPE_DESTROYER {
                rtn["destroyers"] = append(rtn["destroyers"], location{row, col});
             }
          }

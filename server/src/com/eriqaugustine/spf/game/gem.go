@@ -2,6 +2,7 @@ package game;
 
 import (
    "fmt"
+   "strconv"
    "math/rand"
 );
 
@@ -39,18 +40,18 @@ func (this *Gem) String() string {
 }
 
 func (this *Gem) hash() string {
-   var hash string = "gem-" + string(this.Type);
+   var hash string = "gem-" + strconv.Itoa(this.Type);
 
    // Stars are the only gem without a color.
    if this.Type != TYPE_STAR {
-      hash += "-color-" + string(this.Color);
+      hash += "-color-" + strconv.Itoa(this.Color);
    }
 
    switch this.Type {
       case TYPE_DESTROYER:
          hash += "-destroyer";
       case TYPE_LOCKED:
-         hash += "-locked-" + string(this.Timer);
+         hash += "-locked-" + strconv.Itoa(this.Timer);
       case TYPE_STAR:
          hash += "-star";
    }

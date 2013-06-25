@@ -72,12 +72,12 @@ Board.prototype.hash = function() {
          if (gem) {
             gemHashes.push(gem.hash());
          } else {
-            gemHashes.push('0');
+            gemHashes.push('_');
          }
       }
    }
 
-   return md5(gemHashes.join());
+   return md5(gemHashes.join(''));
 };
 
 // TODO(eriq): Also check end game during punishment.

@@ -63,10 +63,11 @@ func GameServer(ws *websocket.Conn) {
             // TEST
             println("Move");
 
+            // TODO(eriq): will return nil on hash miss.
             var dropGroup =
                activeGames[id].MoveUpdate(id, movePart.Locations, movePart.BoardHash);
             var message = NewMessage(MESSAGE_TYPE_NEXT_DROP,
-                                     NextDropMessagePart{dropGroup});
+                                     NextDropMessagePart{*dropGroup});
 
             websocket.JSON.Send(connections[id], message);
          default:
