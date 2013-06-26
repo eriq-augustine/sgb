@@ -215,7 +215,8 @@ InternalRenderer.prototype.renderGem = function(gemRenderId, gem) {
             if (gem.counter < 1 || gem.counter > Gem.MAX_COUNTER) {
                error("Don't know how to render out gem with counter " + gem.counter);
             }
-            cell.addClass('gem gem-locked-' + gem.counter);
+            // gem-locked-<color>-<timer>
+            cell.addClass('gem gem-locked-' + gem.color + '-' + gem.counter);
             break;
          default:
             error('Unknown gem type: ' + gem.type);
