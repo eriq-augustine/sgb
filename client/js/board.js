@@ -602,6 +602,22 @@ Board.prototype.advanceTimers = function() {
    }
 };
 
+// To be used for opponent boards only.
+// This method is allowed to access |this._board_|.
+Board.prototype.updateBoard = function(board) {
+   for (var i = 0; i < this.height; i++) {
+      for (var j = 0; j < this.width; j++) {
+         if (board[i][j] == null) {
+            this._board_[i][j] = null;
+         } else {
+            this._board_[i][j] = constructGem(board[i][j]);
+         }
+      }
+   }
+
+   requestBoardRender(this.id);
+};
+
 // This is a key rendering function.
 // This should be the ONLY way that gems are placed on |this._board_|.
 // NOTE: This function disallows overriding gems.

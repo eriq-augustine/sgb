@@ -50,8 +50,7 @@ type NextTurnMessagePart struct {
 type UpdateMessagePart struct {
    PlayerPunishment int;
    OpponentPunishment int;
-   // TODO(eriq): Make this a real board.
-   OpponentBoard int;
+   OpponentBoard [][]*gem.Gem;
 };
 
 type ResolveGameMessagePart struct {

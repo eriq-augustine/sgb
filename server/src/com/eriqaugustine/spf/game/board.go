@@ -12,7 +12,7 @@ const DROP_COLUMN = 3;
 type Board struct {
    height int;
    width int;
-   board [][]*Gem;
+   Board [][]*Gem;
 };
 
 type location struct {
@@ -25,10 +25,10 @@ func NewBoard(height int, width int) *Board {
 
    gameBoard.height = height;
    gameBoard.width = width;
-   gameBoard.board = make([][]*Gem, height);
+   gameBoard.Board = make([][]*Gem, height);
 
    for i := 0; i < height; i++ {
-      gameBoard.board[i] = make([]*Gem, width);
+      gameBoard.Board[i] = make([]*Gem, width);
    }
 
    return gameBoard;
@@ -37,7 +37,7 @@ func NewBoard(height int, width int) *Board {
 // Return false if the player loses.
 func (this *Board) advance(game *Game, playerId int) bool {
    // Advance any timers first.
-   for _, row := range this.board {
+   for _, row := range this.Board {
       for _, gem := range row {
          if gem != nil && gem.Type == TYPE_LOCKED {
             gem.Timer -= 1;
@@ -61,7 +61,7 @@ func (this *Board) advance(game *Game, playerId int) bool {
       var baselines []int = make([]int, 0);
       for col := 0; col < this.width; col++ {
          for row := this.height - 1; row >= 0; row-- {
-            if this.board[row][col] == nil {
+            if this.Board[row][col] == nil {
                baselines = append(baselines, row);
                break;
             }
@@ -77,13 +77,13 @@ func (this *Board) advance(game *Game, playerId int) bool {
             return false;
          }
 
-         this.board[row][col] = &punishmentGems[i];
+         this.Board[row][col] = &punishmentGems[i];
          baselines[i % this.width]--;
       }
    }
 
    // Lose!
-   if this.board[0][DROP_COLUMN] != nil || this.board[1][DROP_COLUMN] != nil {
+   if this.Board[0][DROP_COLUMN] != nil || this.Board[1][DROP_COLUMN] != nil {
       return false;
    }
 
@@ -93,7 +93,7 @@ func (this *Board) advance(game *Game, playerId int) bool {
 func (this *Board) hash() string {
    var boardString string = "";
 
-   for _, row := range this.board {
+   for _, row := range this.Board {
       for _, gem := range row {
          if (gem == nil) {
             boardString += "_"
@@ -106,6 +106,20 @@ func (this *Board) hash() string {
    hash := md5.New();
    io.WriteString(hash, boardString);
    return fmt.Sprintf("%x", hash.Sum(nil));
+}
+
+func (this *Board) Serialize() map[string]Gem {
+   var rtn map[string]Gem = make(map[string]Gem);
+
+   for i, row := range this.Board {
+      for j, gem := range row {
+         if (gem != nil) {
+            rtn[fmt.Sprintf("%d-%d", i, j)] = *gem;
+         }
+      }
+   }
+
+   return rtn;
 }
 
 // Fall and destroy any blocks.
@@ -139,7 +153,7 @@ func (this *Board) fall() bool {
       // Start at the second to last row.
       for i := this.height - 2; i >= 0; i-- {
          for j := 0; j < this.width; j++ {
-            if this.board[i][j] != nil && this.board[i + 1][j] == nil {
+            if this.Board[i][j] != nil && this.Board[i + 1][j] == nil {
                this.moveGem(i, j, i + 1, j);
                iterationDropped = true;
                dropped = true;
@@ -169,8 +183,8 @@ func (this *Board) destroy() int {
       // If the position below the star is in-bounds, then it must be occupied.
       // But, make sure that the below gem is not a star.
       if this.inBounds(starLocation.row + 1, starLocation.col) &&
-         this.board[starLocation.row + 1][starLocation.col].Type != TYPE_STAR {
-         starColors[this.board[starLocation.row + 1][starLocation.col].Color] =
+         this.Board[starLocation.row + 1][starLocation.col].Type != TYPE_STAR {
+         starColors[this.Board[starLocation.row + 1][starLocation.col].Color] =
             true;
       } else {
          // Just destroy the star
@@ -203,7 +217,7 @@ func (this *Board) destroy() int {
 func (this *Board) collectColors(colors map[int]bool) *[]location {
    var rtn []location = make([]location, 0);
 
-   for row, boardRow := range this.board {
+   for row, boardRow := range this.Board {
       for col, gem := range boardRow {
          if gem != nil && gem.Type != TYPE_STAR && colors[gem.Color] {
             rtn = append(rtn, location{row, col});
@@ -222,7 +236,7 @@ func (this *Board) getConnectedByColor(start location) *[]location {
       [][]int{[]int{1, 0}, []int{-1, 0}, []int{0, 1}, []int{0, -1}};
 
    var searchStack []location = []location{start};
-   var startColor int = this.board[start.row][start.col].Color;
+   var startColor int = this.Board[start.row][start.col].Color;
 
    for len(searchStack) > 0 {
       var currentLocation location = searchStack[len(searchStack) - 1];
@@ -234,8 +248,8 @@ func (this *Board) getConnectedByColor(start location) *[]location {
 
          if this.inBounds(row, col) &&
             !locationSet[location{row, col}] &&
-            this.board[row][col] != nil &&
-            this.board[row][col].Color == startColor {
+            this.Board[row][col] != nil &&
+            this.Board[row][col].Color == startColor {
                searchStack = append(searchStack, location{row, col});
                locationSet[location{row, col}] = true;
          }
@@ -256,7 +270,7 @@ func (this *Board) collectDestroyers() *map[string][]location {
    rtn["stars"] = make([]location, 0);
    rtn["destroyers"] = make([]location, 0);
 
-   for row, boardRow := range this.board {
+   for row, boardRow := range this.Board {
       for col, gem := range boardRow {
          if gem != nil {
             if gem.Type == TYPE_STAR {
@@ -283,12 +297,12 @@ func (this *Board) moveGem(fromRow int, fromCol int, toRow int, toCol int) bool 
 }
 
 func (this *Board) placeGem(gem *Gem, row int, col int) bool {
-   this.board[row][col] = gem;
+   this.Board[row][col] = gem;
    return true;
 }
 
 func (this *Board) clearGem(row int, col int) *Gem {
-   var rtn = this.board[row][col];
-   this.board[row][col] = nil;
+   var rtn = this.Board[row][col];
+   this.Board[row][col] = nil;
    return rtn;
 }

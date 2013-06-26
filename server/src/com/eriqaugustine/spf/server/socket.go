@@ -128,20 +128,31 @@ func BroadcastStart(currentGame *game.Game) {
 
 func signalNextTurn(playerId int, dropGroup *[2]gem.Gem, punishments int) {
    var currentGame *game.Game = activeGames[playerId];
+   var opponentOrdinal int = currentGame.GetOpponentOrdinal(playerId);
+   var opponentId int = currentGame.GetOpponentId(playerId);
+   var opponentPunishments = currentGame.Punishments[opponentOrdinal];
+   var playerBoard = currentGame.Boards[currentGame.GetPlayerOrdinal(playerId)];
 
    // Tell the player the next turn info
    var playerMessage =
       message.NewMessage(message.MESSAGE_TYPE_NEXT_TURN,
                          message.NextTurnMessagePart{*dropGroup, punishments,
-                                     currentGame.Punishments[currentGame.GetOpponentOrdinal(playerId)]});
+                                                     opponentPunishments});
 
    websocket.JSON.Send(connections[playerId], playerMessage);
 
    // TODO(eriq): Update the opponent.
+   websocket.JSON.Send(
+      connections[opponentId],
+      message.NewMessage(message.MESSAGE_TYPE_UPDATE,
+                         message.UpdateMessagePart{opponentPunishments,
+                                                   0,
+                                                   playerBoard.Board}));
 }
 
 func signalGameOver(playerId int, resolution int) {
    var currentGame *game.Game = activeGames[playerId];
+   var opponentId int = currentGame.GetOpponentId(playerId);
 
    var playerResolution int;
    var opponentResolution int;
@@ -163,7 +174,7 @@ func signalGameOver(playerId int, resolution int) {
    websocket.JSON.Send(connections[playerId],
                        message.NewMessage(message.MESSAGE_TYPE_RESOLVE_GAME,
                                           message.ResolveGameMessagePart{playerResolution}));
-   websocket.JSON.Send(connections[currentGame.Players[currentGame.GetOpponentOrdinal(playerId)]],
+   websocket.JSON.Send(connections[opponentId],
                        message.NewMessage(message.MESSAGE_TYPE_RESOLVE_GAME,
                                           message.ResolveGameMessagePart{opponentResolution}));
 }

@@ -34,6 +34,8 @@ Socket.prototype.onMessage = function(messageEvent) {
                       message.Payload.OpponentPunishment);
          break;
       case Message.TYPE_UPDATE:
+         updateOpponent(message.Payload.OpponentPunishment,
+                        message.Payload.OpponentBoard);
          break;
       case Message.TYPE_RESOLVE_GAME:
          switch (message.Payload.Resolution) {

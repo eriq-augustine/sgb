@@ -18,7 +18,7 @@ type Game struct {
    Id int;
    // Connection ids
    Players [2]int;
-   boards [2]*Board
+   Boards [2]*Board
    rand *rand.Rand;
    dropGroups [][2]Gem;
    playerDropCursors [2]int;
@@ -37,7 +37,7 @@ func NewGame(player1 int, player2 int) *Game {
    // Becausse two groups are given out intially, the initial drop
    //  cursors must be kept track of.
    game.playerDropCursors = [2]int{-1, -1};
-   game.boards = [2]*Board{
+   game.Boards = [2]*Board{
       NewBoard(BOARD_HEIGHT, BOARD_WIDTH),
       NewBoard(BOARD_HEIGHT, BOARD_WIDTH),
    };
@@ -110,16 +110,16 @@ func (this *Game) MoveUpdate(playerId int, locations [2][2]int, hash string) (*[
    // The group being dropped is two behind the current cursor for the player.
    var dropGroup = this.dropGroups[this.playerDropCursors[playerOrdinal] - 2];
 
-   this.boards[playerOrdinal].placeGem(&dropGroup[0], locations[0][0], locations[0][1]);
-   this.boards[playerOrdinal].placeGem(&dropGroup[1], locations[1][0], locations[1][1]);
+   this.Boards[playerOrdinal].placeGem(&dropGroup[0], locations[0][0], locations[0][1]);
+   this.Boards[playerOrdinal].placeGem(&dropGroup[1], locations[1][0], locations[1][1]);
 
-   if hash != this.boards[playerOrdinal].hash() {
+   if hash != this.Boards[playerOrdinal].hash() {
       // TODO(eriq): Real logging
       println("Board hashes differ!");
       return nil, message.END_GAME_NO_CONTEST;
    }
 
-   if !this.boards[playerOrdinal].advance(this, playerId) {
+   if !this.Boards[playerOrdinal].advance(this, playerId) {
       // Player loses.
       return nil, message.END_GAME_LOSE;
    }

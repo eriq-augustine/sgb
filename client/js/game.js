@@ -81,6 +81,10 @@ function nextTurnInfo(dropGroup, playerPunishments, opponentPunishments) {
                                  opponentPunishments);
 }
 
+function updateOpponent(punishments, board) {
+   spfGet('_game_').updateOpponent(punishments, board);
+}
+
 function Game() {
    this.logicWorker = new Worker("js/logicTimer.js");
    this.logicWorker.onmessage = function(evt) {
@@ -116,7 +120,9 @@ Game.prototype.controlledDropComplete = function(dropGemLocations, hash) {
 };
 
 Game.prototype.dropNow = function() {
-   this.playerBoard.advanceDropGroupFull();
+   if (this.state === Game.STATE_CONTROLLED_DROP) {
+      this.playerBoard.advanceDropGroupFull();
+   }
 };
 
 Game.prototype.goLeft = function() {
@@ -277,6 +283,11 @@ Game.prototype.nextTurnInfo = function(dropGroup,
    // The player is taking all their punishments.
    this.playerBoard.modifyPunishments(0);
    this.opponentBoard.modifyPunishments(opponentPunishments);
+};
+
+Game.prototype.updateOpponent = function(punishments, board) {
+   this.opponentBoard.modifyPunishments(punishments);
+   this.opponentBoard.updateBoard(board);
 };
 
 document.addEventListener('DOMContentLoaded', function() {
