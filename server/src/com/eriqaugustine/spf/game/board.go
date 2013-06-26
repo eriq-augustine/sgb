@@ -6,6 +6,8 @@ import (
    "crypto/md5"
 );
 
+const DROP_COLUMN = 3;
+
 type Board struct {
    height int;
    width int;
@@ -31,11 +33,9 @@ func NewBoard(height int, width int) *Board {
    return gameBoard;
 }
 
-// Return the number of gems destroyed.
-func (this *Board) advance() int {
-   var destroyed int = this.stabalize();
-
-   // Advance any timers.
+// Return false if the player loses.
+func (this *Board) advance(game *Game, playerId int) bool {
+   // Advance any timers first.
    for _, row := range this.board {
       for _, gem := range row {
          if gem != nil && gem.Type == TYPE_LOCKED {
@@ -47,7 +47,46 @@ func (this *Board) advance() int {
       }
    }
 
-   return destroyed;
+   var destroyed int = this.stabalize();
+
+   // Drop any punishments.
+   // TODO(eriq): Take combos into consideration.
+   var punishments int = game.AdjustPunishments(playerId, destroyed);
+
+   if punishments > 0 {
+      var punishmentGems []Gem = GetPunishmentGems(punishments, this.width);
+
+      // The first open slot in each column.
+      var baselines []int = make([]int, 0);
+      for col := 0; col < this.width; col++ {
+         for row := this.height - 1; row >= 0; row-- {
+            if this.board[row][col] == nil {
+               baselines = append(baselines, row);
+               break;
+            }
+         }
+      }
+
+      for i := 0; i < len(punishmentGems); i++ {
+         var row int = baselines[i % this.width];
+         var col int = i % this.width;
+
+         // Lose!
+         if row < 0 {
+            return false;
+         }
+
+         this.board[row][col] = &punishmentGems[i];
+         baselines[i % this.width]--;
+      }
+   }
+
+   // Lose!
+   if this.board[0][DROP_COLUMN] != nil || this.board[1][DROP_COLUMN] != nil {
+      return false;
+   }
+
+   return true;
 }
 
 func (this *Board) hash() string {

@@ -1,10 +1,14 @@
 "use strict";
 
-// Some constants.
+// Some time constants.
 Game.DROP_TIME = 750;
 Game.UNSUPPORTED_DROP_TIME = 500;
 Game.DESTROY_TIME = 250;
 Game.NEXT_GEM_WAIT_TIME = 100;
+Game.PUNISHMENT_WAIT_TIME = 10;
+
+Game.BOARD_HEIGHT = 13;
+Game.BOARD_WIDTH = 6;
 
 // Wait for the server to schedule a start.
 Game.STATE_INIT = 0;
@@ -15,8 +19,8 @@ Game.STATE_UNCONTROLLED_DROP = 4;
 // The DESTROY state is just a transition between when some gems are destroyed,
 //  and when the next unsupported drop will attempt.
 Game.STATE_TRY_DESTROY = 5;
-Game.STATE_NEXT_GEM = 6;
-Game.STATE_PUNISHMENT = 7;
+Game.STATE_PUNISHMENT = 6;
+Game.STATE_NEXT_GEM = 7;
 Game.STATE_DONE = 8;
 Game.STATE_LOSE = 9;
 Game.STATE_WIN = 10;
@@ -62,8 +66,10 @@ function startGame(dropGroups) {
    spfGet('_game_').start(dropGroups);
 }
 
-function enqueueDropGroup(dropGroup) {
-   spfGet('_game_').enqueueDrop(dropGroup);
+function nextTurnInfo(dropGroup, playerPunishments, opponentPunishments) {
+   spfGet('_game_').nextTurnInfo(dropGroup,
+                                 playerPunishments,
+                                 opponentPunishments);
 }
 
 function Game() {
@@ -85,11 +91,16 @@ function Game() {
 
    this.playerBoard = null;
    this.opponentBoard = null;
+
+   this.frozenPunishments = null;
 }
 
 Game.prototype.controlledDropComplete = function(dropGemLocations, hash) {
    this.lastDrop = Date.now();
    this.state = Game.STATE_UNCONTROLLED_DROP;
+   
+   // Advance the timers before destructions are attempted.
+   this.playerBoard.advanceTimers();
 
    // Tell the server that the drop is complete.
    this.socket.sendMove(dropGemLocations, hash);
@@ -154,21 +165,45 @@ Game.prototype.gameTick = function() {
                // TODO(eriq): Fancy destruction animation.
                this.state = Game.STATE_UNCONTROLLED_DROP;
             } else {
+               this.state = Game.STATE_PUNISHMENT;
+            }
+         }
+         break;
+      case Game.STATE_PUNISHMENT:
+         // Block until the server gives information about the next turn.
+         if (this.frozenPunishments == null) {
+            break;
+         }
+
+         // TODO(eriq): Losing by punishment should be taken care of by the server.
+         if (now - this.lastDrop >= Game.PUNISHMENT_WAIT_TIME) {
+            this.lastDrop = now;
+
+            // Drop the punishments down one level and place the next punishments.
+            // If neither occur, then the punishment phase is over.
+            var keepGoing = this.playerBoard.singleDropIteration();
+            keepGoing |= this.playerBoard.dropPunishmentRow(this.frozenPunishments);
+
+            if (!keepGoing) {
+               // Done with punishments.
+               this.frozenPunishments = null;
                this.state = Game.STATE_NEXT_GEM;
             }
          }
          break;
       case Game.STATE_NEXT_GEM:
-         // TODO(eriq): Send a request to the server for the next gem.
-         // If there is not enough gems in the queue, then wait for the next gem to appear.
-         if (this.dropQueue.length > 0) {
-            if (now - this.lastDrop >= Game.NEXT_GEM_WAIT_TIME) {
-               this.lastDrop = now;
-               // TODO(eriq): Deal with the situation where the sever
-               //  has not given the next group yet.
-               this.playerBoard.releaseGem(this.dropQueue.shift());
-               this.state = Game.STATE_CONTROLLED_DROP;
-            }
+         // There should always be a group ready in the queue.
+         // Punishments blocked for it.
+         if (this.dropQueue.length == 0) {
+            error('Drop queue is empty.');
+         }
+
+         if (now - this.lastDrop >= Game.NEXT_GEM_WAIT_TIME) {
+            this.lastDrop = now;
+            // TODO(eriq): Deal with the situation where the sever
+            //  has not given the next group yet.
+            this.playerBoard.releaseGem(this.dropQueue.shift());
+            this.state = Game.STATE_CONTROLLED_DROP;
          }
          break;
       case Game.STATE_DONE:
@@ -180,10 +215,12 @@ Game.prototype.gameTick = function() {
 };
 
 Game.prototype.start = function(dropGroups) {
-   this.playerBoard = new Board('js-player-board', 13, 6, dropGroups[0]);
-   this.opponentBoard = new Board('js-opponent-board', 13, 6, dropGroups[0]);
+   this.playerBoard = new Board('js-player-board', Game.BOARD_HEIGHT,
+                                 Game.BOARD_WIDTH, dropGroups[0]);
+   this.opponentBoard = new Board('js-opponent-board', Game.BOARD_HEIGHT,
+                                  Game.BOARD_WIDTH, dropGroups[0]);
 
-   this.enqueueDrop(dropGroups[1]);
+   this.dropQueue.push(dropGroups[1]);
 
    this.lastDrop = Date.now();
    this.state = Game.STATE_NEXT_GEM;
@@ -208,8 +245,16 @@ Game.prototype.win = function() {
    // TODO(eriq): Display some message.
 };
 
-Game.prototype.enqueueDrop = function(dropGroup) {
+Game.prototype.nextTurnInfo = function(dropGroup,
+                                       playerPunishments,
+                                       opponentPunishments) {
    this.dropQueue.push(dropGroup);
+
+   this.frozenPunishments = genPunishmentGems(playerPunishments, Game.BOARD_WIDTH);
+
+   // The player is taking all their punishments.
+   this.playerBoard.modifyPunishments(0);
+   this.opponentBoard.modifyPunishments(opponentPunishments);
 };
 
 document.addEventListener('DOMContentLoaded', function() {

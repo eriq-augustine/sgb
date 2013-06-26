@@ -56,10 +56,6 @@ function Board(id, height, width, nextDropGroup) {
    requestInitBoard(this.id);
 }
 
-Board.prototype.addPunishments = function(number) {
-   this.punishments += number;
-};
-
 Board.prototype.hash = function() {
    var gemHashes = [];
    var gem = null;
@@ -79,6 +75,26 @@ Board.prototype.hash = function() {
    return md5(gemHashes.join(''));
 };
 
+// Place a single row of punishments.
+// Take the punishments from |punishments|.
+// Return true if punishments were dropped.
+// TODO(eriq): Be more generous. If a col is full, drop the punishments elsewhere.
+Board.prototype.dropPunishmentRow = function(punishments) {
+   var toDrop = Math.min(this.width, punishments.length);
+
+   for (var i = 0; i < toDrop; i++) {
+      if (this.getGem(0, i)) {
+         // TODO(eriq): lose. THis should be handled by the server.
+         error('Unable to place punishment');
+         return false;
+      }
+
+      this.placeGem(punishments.shift(), 0, i);
+   }
+
+   return toDrop > 0;
+};
+
 // TODO(eriq): Also check end game during punishment.
 Board.prototype.releaseGem = function(newDropGroup) {
    this.updateDropGroup(newDropGroup);
@@ -86,7 +102,7 @@ Board.prototype.releaseGem = function(newDropGroup) {
    var delta = orientationDelta(this.dropGroup.orientation);
 
    if (this.getGem(0, this.DROP_COLUMN) || this.getGem(1, this.DROP_COLUMN)) {
-      loseGame();
+      loseGame()
       return false;
    }
 
@@ -358,22 +374,29 @@ Board.prototype.dropUnsupported = function() {
    var dropped = false;
 
    while (iterationDropped) {
-      iterationDropped = false;
+      iterationDropped = this.singleDropIteration();
+      dropped |= iterationDropped;
+   }
 
-      // Start at the second to bottom row (bottom one does not need to drop).
-      for (var i = this.height - 2; i >= 0; i--) {
-         for (var j = 0; j < this.width; j++) {
-            // If there is a gem here and not bellow it, then drop.
-            if (this.getGem(i, j) && !this.getGem(i + 1, j)) {
-               this.moveGem(i, j, i + 1, j);
-               iterationDropped = true;
-               dropped = true;
-            }
+   return dropped;
+};
+
+// Drop all unsupported gems one level.
+Board.prototype.singleDropIteration = function() {
+   var iterationDropped = false;
+
+   // Start at the second to bottom row (bottom one does not need to drop).
+   for (var i = this.height - 2; i >= 0; i--) {
+      for (var j = 0; j < this.width; j++) {
+         // If there is a gem here and not bellow it, then drop.
+         if (this.getGem(i, j) && !this.getGem(i + 1, j)) {
+            this.moveGem(i, j, i + 1, j);
+            iterationDropped = true;
          }
       }
    }
 
-   return dropped;
+   return iterationDropped;
 };
 
 // NOTE(eriq): There are many inefficiencies in this.
@@ -557,6 +580,26 @@ Board.prototype.updateDropGroup = function(newDropGroup) {
    requestNextDropGroupRender(this.id);
 
    return true;
+};
+
+// Update all the timers on the board (locked gems).
+// Return true if any timers were updated.
+Board.prototype.advanceTimers = function() {
+   for (var i = 0; i < this.height; i++) {
+      for (var j = 0; j < this.width; j++) {
+         var gem = this.getGem(i, j);
+
+         if (gem && gem.type == Gem.TYPE_LOCKED) {
+            gem.counter--;
+
+            if (gem.counter == 0) {
+               this._board_[i][j] = new NormalGem(gem.color);
+            }
+
+            requestCellRender(this.id, i, j);
+         }
+      }
+   }
 };
 
 // This is a key rendering function.

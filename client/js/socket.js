@@ -2,15 +2,6 @@
 
 Socket.SERVER = 'ws://localhost:12345/testsocket';
 
-Socket.MESSAGE_TYPE_INIT = 0;
-Socket.MESSAGE_TYPE_START = 1;
-Socket.MESSAGE_TYPE_MOVE = 2;
-Socket.MESSAGE_TYPE_NEXT_DROP = 3;
-Socket.MESSAGE_TYPE_PUNISHMENT = 4;
-Socket.MESSAGE_TYPE_UPDATE = 5;
-Socket.MESSAGE_TYPE_END_GAME = 6;
-Socket.NUM_MESSAGE_TYPES = 7;
-
 function Socket() {
    this.ws = new WebSocket(Socket.SERVER);
 
@@ -37,10 +28,10 @@ Socket.prototype.onMessage = function(messageEvent) {
          startGame([new DropGroup(message.Payload.Drops[0]),
                     new DropGroup(message.Payload.Drops[1])]);
          break;
-      case Message.TYPE_NEXT_DROP:
-         enqueueDropGroup(new DropGroup(message.Payload.Drop));
-         break;
-      case Message.TYPE_PUNISHMENT:
+      case Message.TYPE_NEXT_TURN:
+         nextTurnInfo(new DropGroup(message.Payload.Drop),
+                      message.Payload.PlayerPunishment,
+                      message.Payload.OpponentPunishment);
          break;
       case Message.TYPE_UPDATE:
          break;

@@ -6,6 +6,8 @@ import (
    "math/rand"
 );
 
+const MAXED_LOCKED_TIMER = 5;
+
 const (
    TYPE_NORMAL = iota
    TYPE_DESTROYER

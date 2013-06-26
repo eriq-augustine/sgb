@@ -10,8 +10,7 @@ const (
    MESSAGE_TYPE_INIT = iota
    MESSAGE_TYPE_START
    MESSAGE_TYPE_MOVE
-   MESSAGE_TYPE_NEXT_DROP
-   MESSAGE_TYPE_PUNISHMENT
+   MESSAGE_TYPE_NEXT_TURN
    MESSAGE_TYPE_UPDATE
    MESSAGE_TYPE_END_GAME
    NUM_MESSAGE_TYPES
@@ -35,20 +34,17 @@ type MoveMessagePart struct {
    BoardHash string;
 };
 
-type NextDropMessagePart struct {
+type NextTurnMessagePart struct {
    Drop [2]game.Gem;
-};
-
-type PunishmentMessagePart struct {
-   PlayerPunishment uint;
-   OpponentPunishment uint;
+   PlayerPunishment int;
+   OpponentPunishment int;
 };
 
 type UpdateMessagePart struct {
-   PlayerPunishment uint;
-   OpponentPunishment uint;
+   PlayerPunishment int;
+   OpponentPunishment int;
    // TODO(eriq): Make this a real board.
-   OpponentBoard uint;
+   OpponentBoard int;
 };
 
 type EndGameMessagePart struct {
@@ -81,12 +77,8 @@ func (this *Message) DecodeMessagePart() interface{} {
          var part MoveMessagePart;
          json.Unmarshal(*this.Payload, &part);
          return part;
-      case MESSAGE_TYPE_NEXT_DROP:
-         var part NextDropMessagePart;
-         json.Unmarshal(*this.Payload, &part);
-         return part;
-      case MESSAGE_TYPE_PUNISHMENT:
-         var part PunishmentMessagePart;
+      case MESSAGE_TYPE_NEXT_TURN:
+         var part NextTurnMessagePart;
          json.Unmarshal(*this.Payload, &part);
          return part;
       case MESSAGE_TYPE_UPDATE:

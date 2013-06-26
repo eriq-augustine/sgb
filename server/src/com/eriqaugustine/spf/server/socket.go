@@ -55,7 +55,7 @@ func GameServer(ws *websocket.Conn) {
                activeGames[waitingPlayer] = newGame;
 
                waitingPlayer = -1;
-               broadcastStart(ws, newGame);
+               BroadcastStart(newGame);
             }
          case MoveMessagePart:
             var movePart, _ = messagePart.(MoveMessagePart);
@@ -64,12 +64,9 @@ func GameServer(ws *websocket.Conn) {
             println("Move");
 
             // TODO(eriq): will return nil on hash miss.
-            var dropGroup =
+            var dropGroup, punishments =
                activeGames[id].MoveUpdate(id, movePart.Locations, movePart.BoardHash);
-            var message = NewMessage(MESSAGE_TYPE_NEXT_DROP,
-                                     NextDropMessagePart{*dropGroup});
-
-            websocket.JSON.Send(connections[id], message);
+            signalNextTurn(id, dropGroup, punishments);
          default:
             fmt.Println("Unknow type: ", msgType);
             continue;
@@ -83,7 +80,7 @@ func GameServer(ws *websocket.Conn) {
    println("On Close");
 }
 
-func broadcastStart(ws *websocket.Conn, currentGame *game.Game) {
+func BroadcastStart(currentGame *game.Game) {
    // Initial drop will be the same for both players.
    var message = NewMessage(MESSAGE_TYPE_START,
                             StartMessagePart{currentGame.InitialDrops()});
@@ -91,4 +88,18 @@ func broadcastStart(ws *websocket.Conn, currentGame *game.Game) {
    for _, playerId := range currentGame.Players {
       websocket.JSON.Send(connections[playerId], message);
    }
+}
+
+func signalNextTurn(playerId int, dropGroup *[2]game.Gem, punishments int) {
+   var currentGame *game.Game = activeGames[playerId];
+
+   // Tell the player the next turn info
+   var playerMessage =
+      NewMessage(MESSAGE_TYPE_NEXT_TURN,
+                 NextTurnMessagePart{*dropGroup, punishments,
+                                     currentGame.Punishments[currentGame.GetOpponentOrdinal(playerId)]});
+
+   websocket.JSON.Send(connections[playerId], playerMessage);
+
+   // TODO(eriq): Update the opponent.
 }
