@@ -35,7 +35,21 @@ Socket.prototype.onMessage = function(messageEvent) {
          break;
       case Message.TYPE_UPDATE:
          break;
-      case Message.TYPE_END_GAME:
+      case Message.TYPE_RESOLVE_GAME:
+         switch (message.Payload.Resolution) {
+            case Message.END_GAME_LOSE:
+               loseGame();
+               break;
+            case Message.END_GAME_WIN:
+               winGame();
+               break;
+            case Message.END_GAME_NO_CONTEST:
+               noContest();
+               break;
+            default:
+               error('Unknown game resolution: ' + message.Payload.Resolution);
+               break;
+         }
          break;
       default:
          // Note: There are messages that are known, but just not expected from the server.
@@ -62,14 +76,12 @@ Socket.prototype.onMessage = function(messageEvent) {
 };
 
 Socket.prototype.onClose = function(messageEvent) {
-   //console.log("Connection to server closed: " + JSON.stringify(messageEvent));
    debug("Connection to server closed.");
+   noContest();
 };
 
 Socket.prototype.onOpen = function(messageEvent) {
-   //console.log("Connection to server opened: " + JSON.stringify(messageEvent));
    debug("Connection to server opened.");
-
    this.ws.send(createInitMessage());
 };
 
@@ -79,4 +91,8 @@ Socket.prototype.onError = function(messageEvent) {
 
 Socket.prototype.sendMove = function(dropGemLocations, boardHash) {
    this.ws.send(createMoveMessage(dropGemLocations, boardHash));
+};
+
+Socket.prototype.close = function() {
+   this.ws.close();
 };

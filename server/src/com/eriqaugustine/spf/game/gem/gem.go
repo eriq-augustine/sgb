@@ -1,4 +1,4 @@
-package game;
+package gem;
 
 import (
    "fmt"
@@ -41,7 +41,7 @@ func (this *Gem) String() string {
                       this.Type, this.Color, this.Timer);
 }
 
-func (this *Gem) hash() string {
+func (this *Gem) Hash() string {
    var hash string = "gem-" + strconv.Itoa(this.Type);
 
    // Stars are the only gem without a color.

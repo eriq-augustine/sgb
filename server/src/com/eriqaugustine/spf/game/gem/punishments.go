@@ -1,4 +1,4 @@
-package game;
+package gem;
 
 // TODO(eriq): Different characters and combos.
 

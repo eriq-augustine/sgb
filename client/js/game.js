@@ -24,6 +24,7 @@ Game.STATE_NEXT_GEM = 7;
 Game.STATE_DONE = 8;
 Game.STATE_LOSE = 9;
 Game.STATE_WIN = 10;
+Game.STATE_NO_CONTEST = 11;
 Game.NUM_STATES = 11;
 
 // Provide controled access to spf variables.
@@ -60,6 +61,14 @@ function dropComplete(dropGemLocations, hash) {
 
 function loseGame() {
    spfGet('_game_').lose();
+}
+
+function winGame() {
+   spfGet('_game_').win();
+}
+
+function noContest() {
+   spfGet('_game_').noContest();
 }
 
 function startGame(dropGroups) {
@@ -229,6 +238,7 @@ Game.prototype.start = function(dropGroups) {
 
 Game.prototype.stop = function() {
    this.state = Game.STATE_DONE;
+   this.socket.close();
    this.logicWorker.postMessage('stop');
    stopRenderer();
 };
@@ -243,6 +253,18 @@ Game.prototype.lose = function() {
 
 Game.prototype.win = function() {
    // TODO(eriq): Display some message.
+   console.log('You Win!');
+
+   this.stop();
+   this.state = Game.STATE_WIN;
+};
+
+Game.prototype.noContest = function() {
+   // TODO(eriq): Display some message.
+   console.log('No Contest!');
+
+   this.stop();
+   this.state = Game.STATE_NO_CONTEST;
 };
 
 Game.prototype.nextTurnInfo = function(dropGroup,

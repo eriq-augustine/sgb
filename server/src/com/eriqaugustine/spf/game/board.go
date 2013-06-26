@@ -4,6 +4,7 @@ import (
    "io"
    "fmt"
    "crypto/md5"
+   . "com/eriqaugustine/spf/game/gem"
 );
 
 const DROP_COLUMN = 3;
@@ -97,7 +98,7 @@ func (this *Board) hash() string {
          if (gem == nil) {
             boardString += "_"
          } else {
-            boardString += gem.hash();
+            boardString += gem.Hash();
          }
       }
    }

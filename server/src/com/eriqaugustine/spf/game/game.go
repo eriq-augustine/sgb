@@ -3,6 +3,8 @@ package game;
 import (
    "time"
    "math/rand"
+   "com/eriqaugustine/spf/message"
+   . "com/eriqaugustine/spf/game/gem"
 );
 
 const (
@@ -55,6 +57,11 @@ func (this *Game) nextDrop(playerOrdinal int) [2]Gem {
    return this.dropGroups[this.playerDropCursors[playerOrdinal] - 1];
 }
 
+// Get the id (not ordinal) for the opponent.
+func (this *Game) GetOpponentId(playerId int) int {
+   return this.Players[this.GetOpponentOrdinal(playerId)];
+}
+
 func (this *Game) GetOpponentOrdinal(playerId int) int {
    return (this.GetPlayerOrdinal(playerId) + 1) % 2;
 }
@@ -95,6 +102,8 @@ func (this *Game) InitialDrops() [2][2]Gem {
 
 // Update the boards according to a player move.
 // Return the next gem for that player and the number of punishments the plater must take.
+// If nil is returned, then that means the game is over.
+//  The the second return will be the game resolution.
 func (this *Game) MoveUpdate(playerId int, locations [2][2]int, hash string) (*[2]Gem, int) {
    var playerOrdinal int = this.GetPlayerOrdinal(playerId);
 
@@ -107,12 +116,12 @@ func (this *Game) MoveUpdate(playerId int, locations [2][2]int, hash string) (*[
    if hash != this.boards[playerOrdinal].hash() {
       // TODO(eriq): Real logging
       println("Board hashes differ!");
-      return nil, -1;
+      return nil, message.END_GAME_NO_CONTEST;
    }
 
    if !this.boards[playerOrdinal].advance(this, playerId) {
       // Player loses.
-      // TODO(eriq);
+      return nil, message.END_GAME_LOSE;
    }
 
    // The player just took all of their punishments, should keep the number to send to
@@ -128,9 +137,6 @@ func (this *Game) MoveUpdate(playerId int, locations [2][2]int, hash string) (*[
 // Adjust both players' punishments accordingly.
 // Returns the new punishment value for |playerId|.
 func (this *Game) AdjustPunishments(playerId int, destroyed int) int {
-   // TODO(eriq): An additional message may be sent out if there is a
-   //  punishment adjustment and the player also loses.
-
    var playerOrdinal int = this.GetPlayerOrdinal(playerId);
 
    var newPunishment int = this.Punishments[playerOrdinal] - destroyed;
@@ -140,8 +146,6 @@ func (this *Game) AdjustPunishments(playerId int, destroyed int) int {
    }
 
    this.Punishments[playerOrdinal] = newPunishment;
-
-   // TODO(eriq): Ideally, the players should be updated here. Not defered.
 
    return newPunishment;
 }

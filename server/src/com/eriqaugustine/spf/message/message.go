@@ -1,9 +1,9 @@
-package server;
+package message;
 
 import (
    "fmt"
    "encoding/json"
-   "com/eriqaugustine/spf/game"
+   "com/eriqaugustine/spf/game/gem"
 );
 
 const (
@@ -12,8 +12,15 @@ const (
    MESSAGE_TYPE_MOVE
    MESSAGE_TYPE_NEXT_TURN
    MESSAGE_TYPE_UPDATE
-   MESSAGE_TYPE_END_GAME
+   MESSAGE_TYPE_RESOLVE_GAME
    NUM_MESSAGE_TYPES
+);
+
+const (
+   END_GAME_LOSE = iota
+   END_GAME_WIN
+   END_GAME_NO_CONTEST
+   NUM_END_GAMES
 );
 
 type Message struct {
@@ -26,7 +33,7 @@ type InitMessagePart struct {
 };
 
 type StartMessagePart struct {
-   Drops [2][2]game.Gem;
+   Drops [2][2]gem.Gem;
 };
 
 type MoveMessagePart struct {
@@ -35,7 +42,7 @@ type MoveMessagePart struct {
 };
 
 type NextTurnMessagePart struct {
-   Drop [2]game.Gem;
+   Drop [2]gem.Gem;
    PlayerPunishment int;
    OpponentPunishment int;
 };
@@ -47,8 +54,8 @@ type UpdateMessagePart struct {
    OpponentBoard int;
 };
 
-type EndGameMessagePart struct {
-   Win bool;
+type ResolveGameMessagePart struct {
+   Resolution int;
 };
 
 func NewMessage(messageType int, messagePart interface{}) *Message {
@@ -85,8 +92,8 @@ func (this *Message) DecodeMessagePart() interface{} {
          var part UpdateMessagePart;
          json.Unmarshal(*this.Payload, &part);
          return part;
-      case MESSAGE_TYPE_END_GAME:
-         var part EndGameMessagePart;
+      case MESSAGE_TYPE_RESOLVE_GAME:
+         var part ResolveGameMessagePart;
          json.Unmarshal(*this.Payload, &part);
          return part;
       default:
