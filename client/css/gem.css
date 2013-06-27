@@ -1,121 +1,187 @@
-.gem {
+.renderer-gem {
    background-image: url('../images/gems.png');
 }
 
-.gem-normal-0 {
+/* .gem-normal-<color>-<animation frame> */
+
+.renderer-gem-normal-0 {
    background-position: 0px 0px;
 }
 
-.gem-normal-1 {
+.renderer-gem-normal-1 {
    background-position: 0px -20px;
 }
 
-.gem-normal-2 {
+.renderer-gem-normal-2 {
    background-position: 0px -40px;
 }
 
-.gem-normal-3 {
+.renderer-gem-normal-3 {
    background-position: 0px -60px;
 }
 
-.gem-destroyer-0 {
+.animation-gem-normal-0-0 {
+   background-position: 0px 0px;
+}
+
+.animation-gem-normal-0-1 {
+   background-position: 20px 0px;
+}
+
+.animation-gem-normal-0-2 {
+   background-position: 40px 0px;
+}
+
+.animation-gem-normal-0-3 {
+   background-position: 60px 0px;
+}
+
+.animation-gem-normal-1-0 {
+   background-position: 0px -20px;
+}
+
+.animation-gem-normal-1-1 {
+   background-position: 20px -20px;
+}
+
+.animation-gem-normal-1-2 {
+   background-position: 40px -20px;
+}
+
+.animation-gem-normal-1-3 {
+   background-position: 60px -20px;
+}
+
+.animation-gem-normal-2-0 {
+   background-position: 0px -40px;
+}
+
+.animation-gem-normal-2-1 {
+   background-position: 20px -40px;
+}
+
+.animation-gem-normal-2-2 {
+   background-position: 40px -40px;
+}
+
+.animation-gem-normal-2-3 {
+   background-position: 60px -40px;
+}
+
+.animation-gem-normal-3-0 {
+   background-position: 0px -60px;
+}
+
+.animation-gem-normal-3-1 {
+   background-position: 20px -60px;
+}
+
+.animation-gem-normal-3-2 {
+   background-position: 40px -60px;
+}
+
+.animation-gem-normal-3-3 {
+   background-position: 60px -60px;
+}
+
+.renderer-gem-destroyer-0 {
    background-position: 0px -100px;
 }
 
-.gem-destroyer-1 {
+.renderer-gem-destroyer-1 {
    background-position: 0px -120px;
 }
 
-.gem-destroyer-2 {
+.renderer-gem-destroyer-2 {
    background-position: 0px -140px;
 }
 
-.gem-destroyer-3 {
+.renderer-gem-destroyer-3 {
    background-position: 0px -160px;
 }
 
-.gem-star {
+.renderer-gem-star {
    background-position: 0px -180px;
 }
 
 /* gem-locked-<color>-<timer> */
 
-.gem-locked-0-1 {
+.renderer-gem-locked-0-1 {
    background-position: 0px -200px;
 }
 
-.gem-locked-0-2 {
+.renderer-gem-locked-0-2 {
    background-position: 0px -220px;
 }
 
-.gem-locked-0-3 {
+.renderer-gem-locked-0-3 {
    background-position: 0px -240px;
 }
 
-.gem-locked-0-4 {
+.renderer-gem-locked-0-4 {
    background-position: 0px -260px;
 }
 
-.gem-locked-0-5 {
+.renderer-gem-locked-0-5 {
    background-position: 0px -280px;
 }
 
-.gem-locked-1-1 {
+.renderer-gem-locked-1-1 {
    background-position: 20px -200px;
 }
 
-.gem-locked-1-2 {
+.renderer-gem-locked-1-2 {
    background-position: 20px -220px;
 }
 
-.gem-locked-1-3 {
+.renderer-gem-locked-1-3 {
    background-position: 20px -240px;
 }
 
-.gem-locked-1-4 {
+.renderer-gem-locked-1-4 {
    background-position: 20px -260px;
 }
 
-.gem-locked-1-5 {
+.renderer-gem-locked-1-5 {
    background-position: 20px -280px;
 }
 
-.gem-locked-2-1 {
+.renderer-gem-locked-2-1 {
    background-position: 40px -200px;
 }
 
-.gem-locked-2-2 {
+.renderer-gem-locked-2-2 {
    background-position: 40px -220px;
 }
 
-.gem-locked-2-3 {
+.renderer-gem-locked-2-3 {
    background-position: 40px -240px;
 }
 
-.gem-locked-2-4 {
+.renderer-gem-locked-2-4 {
    background-position: 40px -260px;
 }
 
-.gem-locked-2-5 {
+.renderer-gem-locked-2-5 {
    background-position: 40px -280px;
 }
 
-.gem-locked-3-1 {
+.renderer-gem-locked-3-1 {
    background-position: 60px -200px;
 }
 
-.gem-locked-3-2 {
+.renderer-gem-locked-3-2 {
    background-position: 60px -220px;
 }
 
-.gem-locked-3-3 {
+.renderer-gem-locked-3-3 {
    background-position: 60px -240px;
 }
 
-.gem-locked-3-4 {
+.renderer-gem-locked-3-4 {
    background-position: 60px -260px;
 }
 
-.gem-locked-3-5 {
+.renderer-gem-locked-3-5 {
    background-position: 60px -280px;
 }

@@ -10,6 +10,7 @@
       <script type="text/javascript" src="js/gem.js"></script>
       <script type="text/javascript" src="js/board.js"></script>
       <script type="text/javascript" src="js/animation.js"></script>
+      <script type="text/javascript" src="js/gemAnimations.js"></script>
       <script type="text/javascript" src="js/render.js"></script>
       <script type="text/javascript" src="js/md5.js"></script>
       <script type="text/javascript" src="js/message.js"></script>

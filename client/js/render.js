@@ -36,7 +36,6 @@ function initRenderer() {
    }
 
    spfSet('_renderer_', new InternalRenderer());
-   spfGet('_renderer_').start();
 
    return true;
 }
@@ -53,7 +52,7 @@ function startRenderer() {
 
 function stopRenderer() {
    if (spfGet('_renderer_')) {
-      spfGet('_renderer_').start();
+      spfGet('_renderer_').stop();
    }
 
    return true;
@@ -100,6 +99,12 @@ function requestPunishmentRender(boardId) {
 function InternalRenderer() {
    this.render = true;
    this.updates = [];
+
+   // Internal representations of the boards.
+   // Holds ids (and animation ids of all gems on the board).
+   this.boards = {};
+
+   this.animationMachine = new AnimationMachine();
 }
 
 InternalRenderer.prototype.addUpdate = function(updateRequest) {
@@ -130,6 +135,9 @@ InternalRenderer.prototype.update = function() {
             break;
       }
    }
+
+   // TODO(eriq): Animations
+   // this.animationMachine.maybeAnimate();
 };
 
 InternalRenderer.prototype.initBoard = function(boardId) {
@@ -170,11 +178,33 @@ InternalRenderer.prototype.initBoard = function(boardId) {
 
    $('#' + boardId).html(html);
 
+   this.boards[boardId] = {animations: []};
+   for (var row = 0; row < board.height; row++) {
+      this.boards[boardId].animations.push([]);
+      for (var col = 0; col < board.width; col++) {
+         this.boards[boardId].animations[row].push(null);
+      }
+   }
+
    this.renderBoard(boardId);
+};
+
+InternalRenderer.prototype.stopAnimations = function(boardId) {
+   var animations = this.boards[boardId].animations;
+   for (var row = 0; row < animations.length; row++) {
+      for (var col = 0; col < animations[row].length; col++) {
+         if (animations[row][col] != null) {
+            this.animationsMachine.removeAnimation(animations[row][col]);
+         }
+      }
+   }
 };
 
 InternalRenderer.prototype.renderBoard = function(boardId) {
    var board = getBoard(boardId);
+
+   // Remove any active animations.
+   this.stopAnimations(boardId);
 
    for (var i = 0; i < board.height; i++) {
       for (var j = 0; j < board.width; j++) {
@@ -197,26 +227,26 @@ InternalRenderer.prototype.renderGem = function(gemRenderId, gem) {
    var cell = $('#' + gemRenderId);
    // Remove all gem related classes.
    if (cell.attr('class')) {
-      cell.attr('class', cell.attr('class').replace(/gem?\S*/g, ''));
+      cell.attr('class', cell.attr('class').replace(/renderer-gem?\S*/g, ''));
    }
 
    if (gem) {
       switch (gem.type) {
          case Gem.TYPE_NORMAL:
-            cell.addClass('gem gem-normal-' + gem.color);
+            cell.addClass('renderer-gem renderer-gem-normal-' + gem.color);
             break;
          case Gem.TYPE_DESTROYER:
-            cell.addClass('gem gem-destroyer-' + gem.color);
+            cell.addClass('renderer-gem renderer-gem-destroyer-' + gem.color);
             break;
          case Gem.TYPE_STAR:
-            cell.addClass('gem gem-star');
+            cell.addClass('renderer-gem renderer-gem-star');
             break;
          case Gem.TYPE_LOCKED:
             if (gem.counter < 1 || gem.counter > Gem.MAX_COUNTER) {
                error("Don't know how to render out gem with counter " + gem.counter);
             }
             // gem-locked-<color>-<timer>
-            cell.addClass('gem gem-locked-' + gem.color + '-' + gem.counter);
+            cell.addClass('renderer-gem renderer-gem-locked-' + gem.color + '-' + gem.counter);
             break;
          default:
             error('Unknown gem type: ' + gem.type);
@@ -238,6 +268,7 @@ InternalRenderer.prototype.renderPunishments = function(boardId) {
 
 InternalRenderer.prototype.start = function() {
    this.render = true;
+   this.animationMachine.start();
 
    (function renderLoop() {
       if (spfGet('_renderer_').render) {
@@ -245,9 +276,6 @@ InternalRenderer.prototype.start = function() {
       }
 
       spfGet('_renderer_').update();
-
-      //  TODO(eriq): Animations.
-      // window.animationMachine.maybeAnimate();
    })();
 };
 

@@ -623,7 +623,7 @@ Board.prototype.updateBoard = function(board) {
 // NOTE: This function disallows overriding gems.
 //  That is a rare situation that should ONLY happen as a gem falls vertically.
 //  The lower gem should be cleared using clearGem() first.
-Board.prototype.placeGem = function(gem, row, col) {
+Board.prototype.placeGem = function(gem, row, col, move) {
    if (!this.inBounds(row, col)) {
       error("Gem placement out-of-bounds. Requested (" + row + ", " + col +
             "). Dimensions: " + this.height + " x " + this.width + ".");

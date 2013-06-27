@@ -240,6 +240,7 @@ Game.prototype.start = function(dropGroups) {
    this.lastDrop = Date.now();
    this.state = Game.STATE_NEXT_GEM;
    this.logicWorker.postMessage('start');
+   startRenderer();
 };
 
 Game.prototype.stop = function() {

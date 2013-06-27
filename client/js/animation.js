@@ -4,7 +4,7 @@ function AnimationMachine() {
    this.nextId = 0;
    this.animationLookup = {};
 
-   // This machine handles long animations by putthing it in whatever bucket it belongs in
+   // This machine handles long animations by putting it in whatever bucket it belongs in
    //  and then just not evaluating it if it is not active until the next iteration.
    // Each bucket represents the animations that need to take place within the
    //  next |this.animationBucketTime| ms.
@@ -23,7 +23,22 @@ AnimationMachine.prototype.start = function() {
    this.bucketStartTime = Date.now();
 };
 
+AnimationMachine.prototype.removeAnimation = function(animationId) {
+   var bucket = this.animationLookup[animationId].bucket;
+   this.animationLookup[animationId].animation.removeFrame();
+   delete this.animationLookup.animationId;
+
+   // TODO(eriq): the buckets are arrays, remove from them
+   for (var i = 0; i < this.animationBuckets[bucket].length; i++) {
+      if (this.animationBuckets[bucket][i].id == animationId) {
+         this.animationBuckets[bucket].splice(i, 1);
+         break;
+      }
+   }
+};
+
 // Returns the unique id for the animaiton.
+// This id is critical if you want to stop the animation early.
 AnimationMachine.prototype.addAnimation = function(animation) {
    var id = this.nextId++;
 
@@ -35,6 +50,8 @@ AnimationMachine.prototype.addAnimation = function(animation) {
 
    this.animationLookup[id] = {bucket: bucket, animation: animation};
    this.animationBuckets[bucket].push({id: id, time: animationTime, animation: animation});
+
+   return id;
 };
 
 // TODO(eriq): This does not handle long deltas (from an inactive tab) well.
@@ -90,6 +107,23 @@ function Animation(objectId, frames, repeat) {
    this.currentFrame = -1;
 };
 
+// Remove the current animation frame from the target.
+Animation.prototype.removeFrame = function() {
+   //TEST
+   console.log('remove');
+
+   if (this.currentFrame != -1) {
+      //TEST
+      console.log('remove ' + this.frames[this.currentFrame].animationClass + ' from ' + this.objectId);
+
+      $('#' + this.objectId).removeClass(this.frames[this.currentFrame].animationClass);
+
+      if (this.frames[this.currentFrame].postAnimationHook) {
+         this.frames[this.currentFrame].postAnimationHook.call();
+      }
+   }
+};
+
 // Return the next duration for this animation, or 0 if the animation is done.
 Animation.prototype.advance = function() {
    if (this.currentFrame >= this.frames.length) {
@@ -97,14 +131,7 @@ Animation.prototype.advance = function() {
       return 0;
    }
 
-   if (this.currentFrame != -1) {
-      $('#' + this.objectId).removeClass(this.frames[this.currentFrame].animationClass);
-
-      if (this.frames[this.currentFrame].postAnimationHook) {
-         this.frames[this.currentFrame].postAnimationHook.call();
-      }
-   }
-
+   this.removeFrame();
    this.currentFrame++;
 
    if (this.currentFrame == this.frames.length) {
