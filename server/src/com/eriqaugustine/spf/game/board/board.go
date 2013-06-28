@@ -1,18 +1,18 @@
-package game;
+package board;
 
 import (
    "io"
    "fmt"
    "crypto/md5"
-   . "com/eriqaugustine/spf/game/gem"
+   "com/eriqaugustine/spf/game/gem"
 );
 
 const DROP_COLUMN = 3;
 
 type Board struct {
-   height int;
-   width int;
-   Board [][]*Gem;
+   Height int;
+   Width int;
+   Board [][]*gem.Gem;
 };
 
 type location struct {
@@ -23,82 +23,68 @@ type location struct {
 func NewBoard(height int, width int) *Board {
    var gameBoard *Board = new(Board);
 
-   gameBoard.height = height;
-   gameBoard.width = width;
-   gameBoard.Board = make([][]*Gem, height);
+   gameBoard.Height = height;
+   gameBoard.Width = width;
+   gameBoard.Board = make([][]*gem.Gem, height);
 
    for i := 0; i < height; i++ {
-      gameBoard.Board[i] = make([]*Gem, width);
+      gameBoard.Board[i] = make([]*gem.Gem, width);
    }
 
    return gameBoard;
 }
 
-// Return false if the player loses.
-func (this *Board) advance(game *Game, playerId int) bool {
-   // Advance any timers first.
+func (this *Board) AdvanceTimers() {
    for _, row := range this.Board {
-      for _, gem := range row {
-         if gem != nil && gem.Type == TYPE_LOCKED {
-            gem.Timer -= 1;
-            if gem.Timer == 0 {
-               gem.Type = TYPE_NORMAL;
+      for _, lockedGem := range row {
+         if lockedGem != nil && lockedGem.Type == gem.TYPE_LOCKED {
+            lockedGem.Timer -= 1;
+            if lockedGem.Timer == 0 {
+               lockedGem.Type = gem.TYPE_NORMAL;
             }
          }
       }
    }
-
-   var destroyed int = this.stabalize();
-
-   // Drop any punishments.
-   // TODO(eriq): Take combos into consideration.
-   var punishments int = game.AdjustPunishments(playerId, destroyed);
-
-   if punishments > 0 {
-      var punishmentGems []Gem = GetPunishmentGems(punishments, this.width);
-
-      // The first open slot in each column.
-      var baselines []int = make([]int, 0);
-      for col := 0; col < this.width; col++ {
-         for row := this.height - 1; row >= 0; row-- {
-            if this.Board[row][col] == nil {
-               baselines = append(baselines, row);
-               break;
-            }
-         }
-      }
-
-      for i := 0; i < len(punishmentGems); i++ {
-         var row int = baselines[i % this.width];
-         var col int = i % this.width;
-
-         // Lose!
-         if row < 0 {
-            return false;
-         }
-
-         this.Board[row][col] = &punishmentGems[i];
-         baselines[i % this.width]--;
-      }
-   }
-
-   // Lose!
-   if this.Board[0][DROP_COLUMN] != nil || this.Board[1][DROP_COLUMN] != nil {
-      return false;
-   }
-
-   return true;
 }
 
-func (this *Board) hash() string {
+// Place all punishments and return the punishments.
+func (this *Board) Punish(punishments int) *[][]*gem.Gem {
+   var punishmentGems [][]*gem.Gem = make([][]*gem.Gem, 0);
+
+   if punishments > 0 {
+      punishmentGems = *gem.GetPunishmentGems(punishments, &this.Board,
+                                              gem.DebugDropPattern);
+
+      if punishmentGems == nil {
+         // Lose.
+         return nil;
+      }
+
+      var baselines *[]int = gem.GetBaselines(&this.Board);
+      for col, gems := range punishmentGems {
+         for rowOffset, punishmentGem := range gems {
+            this.Board[(*baselines)[col] - rowOffset][col] = punishmentGem;
+         }
+      }
+   }
+
+   return &punishmentGems;
+}
+
+// Return true if a drop can happen on the boad.
+func (this *Board) CanDrop() bool {
+   return this.Board[0][DROP_COLUMN] == nil && this.Board[1][DROP_COLUMN] == nil;
+}
+
+func (this *Board) Hash() string {
    var boardString string = "";
 
    for _, row := range this.Board {
-      for _, gem := range row {
-         if (gem == nil) {
+      for _, boardGem := range row {
+         if (boardGem == nil) {
             boardString += "_"
          } else {
-            boardString += gem.Hash();
+            boardString += boardGem.Hash();
          }
       }
    }
@@ -108,13 +94,13 @@ func (this *Board) hash() string {
    return fmt.Sprintf("%x", hash.Sum(nil));
 }
 
-func (this *Board) Serialize() map[string]Gem {
-   var rtn map[string]Gem = make(map[string]Gem);
+func (this *Board) Serialize() map[string]gem.Gem {
+   var rtn map[string]gem.Gem = make(map[string]gem.Gem);
 
    for i, row := range this.Board {
-      for j, gem := range row {
-         if (gem != nil) {
-            rtn[fmt.Sprintf("%d-%d", i, j)] = *gem;
+      for j, boardGem := range row {
+         if (boardGem != nil) {
+            rtn[fmt.Sprintf("%d-%d", i, j)] = *boardGem;
          }
       }
    }
@@ -124,7 +110,7 @@ func (this *Board) Serialize() map[string]Gem {
 
 // Fall and destroy any blocks.
 // Return the number of gems destroyed.
-func (this *Board) stabalize() int {
+func (this *Board) Stabalize() int {
    var destroyed int = 0;
 
    // Just keep falling and destroying until nither happens.
@@ -151,8 +137,8 @@ func (this *Board) fall() bool {
       iterationDropped = false;
 
       // Start at the second to last row.
-      for i := this.height - 2; i >= 0; i-- {
-         for j := 0; j < this.width; j++ {
+      for i := this.Height - 2; i >= 0; i-- {
+         for j := 0; j < this.Width; j++ {
             if this.Board[i][j] != nil && this.Board[i + 1][j] == nil {
                this.moveGem(i, j, i + 1, j);
                iterationDropped = true;
@@ -183,7 +169,7 @@ func (this *Board) destroy() int {
       // If the position below the star is in-bounds, then it must be occupied.
       // But, make sure that the below gem is not a star.
       if this.inBounds(starLocation.row + 1, starLocation.col) &&
-         this.Board[starLocation.row + 1][starLocation.col].Type != TYPE_STAR {
+         this.Board[starLocation.row + 1][starLocation.col].Type != gem.TYPE_STAR {
          starColors[this.Board[starLocation.row + 1][starLocation.col].Color] =
             true;
       } else {
@@ -218,8 +204,8 @@ func (this *Board) collectColors(colors map[int]bool) *[]location {
    var rtn []location = make([]location, 0);
 
    for row, boardRow := range this.Board {
-      for col, gem := range boardRow {
-         if gem != nil && gem.Type != TYPE_STAR && colors[gem.Color] {
+      for col, boardGem := range boardRow {
+         if boardGem != nil && boardGem.Type != gem.TYPE_STAR && colors[boardGem.Color] {
             rtn = append(rtn, location{row, col});
          }
       }
@@ -271,11 +257,11 @@ func (this *Board) collectDestroyers() *map[string][]location {
    rtn["destroyers"] = make([]location, 0);
 
    for row, boardRow := range this.Board {
-      for col, gem := range boardRow {
-         if gem != nil {
-            if gem.Type == TYPE_STAR {
+      for col, boardGem := range boardRow {
+         if boardGem != nil {
+            if boardGem.Type == gem.TYPE_STAR {
                rtn["stars"] = append(rtn["stars"], location{row, col});
-            } else if gem.Type == TYPE_DESTROYER {
+            } else if boardGem.Type == gem.TYPE_DESTROYER {
                rtn["destroyers"] = append(rtn["destroyers"], location{row, col});
             }
          }
@@ -286,22 +272,22 @@ func (this *Board) collectDestroyers() *map[string][]location {
 }
 
 func (this *Board) inBounds(row int, col int) bool {
-   return row >= 0 && row < this.height &&
-          col >= 0 && col < this.width;
+   return row >= 0 && row < this.Height &&
+          col >= 0 && col < this.Width;
 }
 
 // TODO(eriq): Verify that each of these operations are proper.
 func (this *Board) moveGem(fromRow int, fromCol int, toRow int, toCol int) bool {
-   var gem = this.clearGem(fromRow, fromCol);
-   return this.placeGem(gem, toRow, toCol);
+   var boardGem = this.clearGem(fromRow, fromCol);
+   return this.PlaceGem(boardGem, toRow, toCol);
 }
 
-func (this *Board) placeGem(gem *Gem, row int, col int) bool {
-   this.Board[row][col] = gem;
+func (this *Board) PlaceGem(boardGem *gem.Gem, row int, col int) bool {
+   this.Board[row][col] = boardGem;
    return true;
 }
 
-func (this *Board) clearGem(row int, col int) *Gem {
+func (this *Board) clearGem(row int, col int) *gem.Gem {
    var rtn = this.Board[row][col];
    this.Board[row][col] = nil;
    return rtn;

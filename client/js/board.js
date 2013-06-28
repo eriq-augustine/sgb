@@ -78,21 +78,24 @@ Board.prototype.hash = function() {
 // Place a single row of punishments.
 // Take the punishments from |punishments|.
 // Return true if punishments were dropped.
-// TODO(eriq): Be more generous. If a col is full, drop the punishments elsewhere.
+// |punishments| is a collection of rows: [ [gem, ...], ...].
+//  null if there is nothing to drop in the col.
+// Note: All lose condisions are handled by the server, it should be smooth sailing.
 Board.prototype.dropPunishmentRow = function(punishments) {
-   var toDrop = Math.min(this.width, punishments.length);
+   var dropped = false;
 
-   for (var i = 0; i < toDrop; i++) {
-      if (this.getGem(0, i)) {
-         // TODO(eriq): lose. THis should be handled by the server.
-         error('Unable to place punishment');
-         return false;
+   for (var col = 0; col < this.width; col++) {
+      if (punishments[col]) {
+         var marshaledGem = punishments[col].shift();
+
+         if (marshaledGem) {
+            this.placeGem(constructGem(marshaledGem), 0, col);
+            dropped = true;
+         }
       }
-
-      this.placeGem(punishments.shift(), 0, i);
    }
 
-   return toDrop > 0;
+   return dropped;
 };
 
 // TODO(eriq): Also check end game during punishment.

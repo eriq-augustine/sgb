@@ -43,7 +43,7 @@ type MoveMessagePart struct {
 
 type NextTurnMessagePart struct {
    Drop [2]gem.Gem;
-   PlayerPunishment int;
+   PlayerPunishment *[][]*gem.Gem;
    OpponentPunishment int;
 };
 

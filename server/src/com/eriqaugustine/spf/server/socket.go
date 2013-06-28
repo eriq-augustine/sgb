@@ -68,6 +68,7 @@ func GameServer(ws *websocket.Conn) {
             // TEST
             println("Move");
 
+            // TODO(eriq): This panics on no contest.
             var dropGroup, punishments =
                activeGames[id].MoveUpdate(id, movePart.Locations,
                                           movePart.BoardHash);
@@ -76,7 +77,7 @@ func GameServer(ws *websocket.Conn) {
                signalNextTurn(id, dropGroup, punishments);
             } else {
                // TODO(eriq): Close the connections now.
-               signalGameOver(id, punishments);
+               signalGameOver(id, message.END_GAME_LOSE);
                break SocketLifeLoop;
             }
          default:
@@ -126,7 +127,7 @@ func BroadcastStart(currentGame *game.Game) {
    }
 }
 
-func signalNextTurn(playerId int, dropGroup *[2]gem.Gem, punishments int) {
+func signalNextTurn(playerId int, dropGroup *[2]gem.Gem, punishments *[][]*gem.Gem) {
    var currentGame *game.Game = activeGames[playerId];
    var opponentOrdinal int = currentGame.GetOpponentOrdinal(playerId);
    var opponentId int = currentGame.GetOpponentId(playerId);

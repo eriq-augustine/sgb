@@ -279,7 +279,7 @@ Game.prototype.nextTurnInfo = function(dropGroup,
                                        opponentPunishments) {
    this.dropQueue.push(dropGroup);
 
-   this.frozenPunishments = genPunishmentGems(playerPunishments, Game.BOARD_WIDTH);
+   this.frozenPunishments = playerPunishments;
 
    // The player is taking all their punishments.
    this.playerBoard.modifyPunishments(0);

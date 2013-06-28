@@ -3,8 +3,8 @@ package game;
 import (
    "time"
    "math/rand"
-   "com/eriqaugustine/spf/message"
-   . "com/eriqaugustine/spf/game/gem"
+   "com/eriqaugustine/spf/game/gem"
+   "com/eriqaugustine/spf/game/board"
 );
 
 const (
@@ -18,9 +18,9 @@ type Game struct {
    Id int;
    // Connection ids
    Players [2]int;
-   Boards [2]*Board
+   Boards [2]*board.Board
    rand *rand.Rand;
-   dropGroups [][2]Gem;
+   dropGroups [][2]gem.Gem;
    playerDropCursors [2]int;
    Punishments [2]int;
 };
@@ -33,13 +33,13 @@ func NewGame(player1 int, player2 int) *Game {
    game.Id = nextId;
    game.Players = [2]int{player1, player2};
    game.rand = rand.New(rand.NewSource(time.Now().UnixNano()));
-   game.dropGroups = make([][2]Gem, 0);
+   game.dropGroups = make([][2]gem.Gem, 0);
    // Becausse two groups are given out intially, the initial drop
    //  cursors must be kept track of.
    game.playerDropCursors = [2]int{-1, -1};
-   game.Boards = [2]*Board{
-      NewBoard(BOARD_HEIGHT, BOARD_WIDTH),
-      NewBoard(BOARD_HEIGHT, BOARD_WIDTH),
+   game.Boards = [2]*board.Board{
+      board.NewBoard(BOARD_HEIGHT, BOARD_WIDTH),
+      board.NewBoard(BOARD_HEIGHT, BOARD_WIDTH),
    };
    game.Punishments = [2]int{0, 0};
 
@@ -47,10 +47,11 @@ func NewGame(player1 int, player2 int) *Game {
 }
 
 // Will advance the player's drop cursor.
-func (this *Game) nextDrop(playerOrdinal int) [2]Gem {
+func (this *Game) nextDrop(playerOrdinal int) [2]gem.Gem {
    if this.playerDropCursors[playerOrdinal] == len(this.dropGroups) {
       this.dropGroups =
-         append(this.dropGroups, [2]Gem{NewGem(this.rand), NewGem(this.rand)});
+         append(this.dropGroups, [2]gem.Gem{gem.NewGem(this.rand),
+                                            gem.NewGem(this.rand)});
    }
 
    this.playerDropCursors[playerOrdinal]++;
@@ -77,11 +78,11 @@ func (this *Game) GetPlayerOrdinal(playerId int) int {
 }
 
 // Get the next drop for the player with the given id (not ordinal).
-func (this *Game) NextDropForPlayer(playerId int) [2]Gem {
+func (this *Game) NextDropForPlayer(playerId int) [2]gem.Gem {
    return this.nextDrop(this.GetPlayerOrdinal(playerId));
 }
 
-func (this *Game) InitialDrops() [2][2]Gem {
+func (this *Game) InitialDrops() [2][2]gem.Gem {
    if (this.playerDropCursors[0] != -1 ||
        this.playerDropCursors[1] != -1 ||
        len(this.dropGroups) != 0) {
@@ -93,52 +94,67 @@ func (this *Game) InitialDrops() [2][2]Gem {
    this.playerDropCursors[1] = 2;
 
    this.dropGroups =
-      append(this.dropGroups, [2]Gem{NewGem(this.rand), NewGem(this.rand)});
+      append(this.dropGroups, [2]gem.Gem{gem.NewGem(this.rand),
+                                         gem.NewGem(this.rand)});
    this.dropGroups =
-      append(this.dropGroups, [2]Gem{NewGem(this.rand), NewGem(this.rand)});
+      append(this.dropGroups, [2]gem.Gem{gem.NewGem(this.rand),
+                                         gem.NewGem(this.rand)});
 
-   return [2][2]Gem{this.dropGroups[0], this.dropGroups[1]};
+   return [2][2]gem.Gem{this.dropGroups[0], this.dropGroups[1]};
 }
 
 // Update the boards according to a player move.
-// Return the next gem for that player and the number of punishments the plater must take.
-// If nil is returned, then that means the game is over.
-//  The the second return will be the game resolution.
-func (this *Game) MoveUpdate(playerId int, locations [2][2]int, hash string) (*[2]Gem, int) {
+// Return the next gem for that player and the punishments the player must take.
+// If nil is returned, then that means the player lost.
+func (this *Game) MoveUpdate(playerId int, locations [2][2]int, hash string) (*[2]gem.Gem, *[][]*gem.Gem) {
    var playerOrdinal int = this.GetPlayerOrdinal(playerId);
 
    // The group being dropped is two behind the current cursor for the player.
    var dropGroup = this.dropGroups[this.playerDropCursors[playerOrdinal] - 2];
 
-   this.Boards[playerOrdinal].placeGem(&dropGroup[0], locations[0][0], locations[0][1]);
-   this.Boards[playerOrdinal].placeGem(&dropGroup[1], locations[1][0], locations[1][1]);
+   this.Boards[playerOrdinal].PlaceGem(&dropGroup[0], locations[0][0], locations[0][1]);
+   this.Boards[playerOrdinal].PlaceGem(&dropGroup[1], locations[1][0], locations[1][1]);
 
-   if hash != this.Boards[playerOrdinal].hash() {
+   if hash != this.Boards[playerOrdinal].Hash() {
       // TODO(eriq): Real logging
-      println("Board hashes differ!");
-      return nil, message.END_GAME_NO_CONTEST;
+      panic("Board hashes differ!");
    }
 
-   if !this.Boards[playerOrdinal].advance(this, playerId) {
+   var punishments *[][]*gem.Gem = this.advanceBoard(playerOrdinal);
+   if punishments == nil {
       // Player loses.
-      return nil, message.END_GAME_LOSE;
+      return nil, nil;
    }
 
-   // The player just took all of their punishments, should keep the number to send to
-   //  the client, but reset the internal number to zero.
-   var punishments = this.Punishments[playerOrdinal];
+   // The player just took all of their punishments.
    this.Punishments[playerOrdinal] = 0;
 
    var nextDrop = this.NextDropForPlayer(playerId);
    return &nextDrop, punishments;
 }
 
-// |playerId| just destroyed |destroyed| number of gems.
-// Adjust both players' punishments accordingly.
-// Returns the new punishment value for |playerId|.
-func (this *Game) AdjustPunishments(playerId int, destroyed int) int {
-   var playerOrdinal int = this.GetPlayerOrdinal(playerId);
+func (this *Game) advanceBoard(playerOrdinal int) *[][]*gem.Gem {
+   // Advance any timers first.
+   this.Boards[playerOrdinal].AdvanceTimers();
 
+   var destroyed int = this.Boards[playerOrdinal].Stabalize();
+
+   // TODO(eriq): Take combos into consideration.
+   var punishments int = this.adjustPunishments(playerOrdinal, destroyed);
+
+   var punishmentGems *[][]*gem.Gem = this.Boards[playerOrdinal].Punish(punishments);
+
+   if punishmentGems == nil || !this.Boards[playerOrdinal].CanDrop() {
+      return nil;
+   }
+
+   return punishmentGems;
+}
+
+// |playerOrdinal| just destroyed |destroyed| number of gems.
+// Adjust both players' punishments accordingly.
+// Returns the new punishment value for |playerOrdinal|.
+func (this *Game) adjustPunishments(playerOrdinal int, destroyed int) int {
    var newPunishment int = this.Punishments[playerOrdinal] - destroyed;
    if newPunishment < 0 {
       this.Punishments[(playerOrdinal + 1) % 2] -= newPunishment;

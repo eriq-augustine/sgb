@@ -6,7 +6,6 @@
 
       <script type="text/javascript" src="js/jquery-2.0.2.min.js"></script>
       <script type="text/javascript" src="js/logger.js"></script>
-      <script type="text/javascript" src="js/punishments.js"></script>
       <script type="text/javascript" src="js/gem.js"></script>
       <script type="text/javascript" src="js/board.js"></script>
       <script type="text/javascript" src="js/animation.js"></script>
