@@ -1,3 +1,29 @@
+.boards {
+   position: relative;
+}
+
+.board-message {
+   position: absolute;
+   top: 30%;
+   left: 10%;
+   font-size: 128px;
+   font-weight: bold;
+   opacity: 0.80;
+}
+
+.board-message-win {
+   color: green;
+}
+
+.board-message-lose {
+   color: red;
+}
+
+.board-message-no-contest {
+   color: #353535;
+   left: 5%;
+}
+
 .board {
    display: inline-block;
    margin-left: 20px;

@@ -17,14 +17,17 @@
       <script type="text/javascript" src="js/game.js"></script>
    </head>
    <body>
-      <div class='board'>
-         <h1>Player Board</h1>
-         <div id='js-player-board' class='board'></div>
-      </div>
+      <div class='boards'>
+         <div class='board-message'></div>
+         <div class='board'>
+            <h1>Player Board</h1>
+            <div id='js-player-board' class='board'></div>
+         </div>
 
-      <div class='board'>
-         <h1>Opponent Board</h1>
-         <div id='js-opponent-board' class='board'></div>
+         <div class='board'>
+            <h1>Opponent Board</h1>
+            <div id='js-opponent-board' class='board'></div>
+         </div>
       </div>
    </body>
 </html>

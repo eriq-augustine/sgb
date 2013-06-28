@@ -111,7 +111,7 @@ function Game() {
 Game.prototype.controlledDropComplete = function(dropGemLocations, hash) {
    this.lastDrop = Date.now();
    this.state = Game.STATE_UNCONTROLLED_DROP;
-   
+
    // Advance the timers before destructions are attempted.
    this.playerBoard.advanceTimers();
 
@@ -190,7 +190,6 @@ Game.prototype.gameTick = function() {
             break;
          }
 
-         // TODO(eriq): Losing by punishment should be taken care of by the server.
          if (now - this.lastDrop >= Game.PUNISHMENT_WAIT_TIME) {
             this.lastDrop = now;
 
@@ -215,8 +214,6 @@ Game.prototype.gameTick = function() {
 
          if (now - this.lastDrop >= Game.NEXT_GEM_WAIT_TIME) {
             this.lastDrop = now;
-            // TODO(eriq): Deal with the situation where the sever
-            //  has not given the next group yet.
             this.playerBoard.releaseGem(this.dropQueue.shift());
             this.state = Game.STATE_CONTROLLED_DROP;
          }
@@ -251,7 +248,7 @@ Game.prototype.stop = function() {
 };
 
 Game.prototype.lose = function() {
-   // TODO(eriq): Display some message.
+   $('.board-message').text('You Lose').addClass('board-message-lose');
    console.log('You Lose!');
 
    this.stop();
@@ -259,7 +256,7 @@ Game.prototype.lose = function() {
 };
 
 Game.prototype.win = function() {
-   // TODO(eriq): Display some message.
+   $('.board-message').text('You Win!').addClass('board-message-win');
    console.log('You Win!');
 
    this.stop();
@@ -267,7 +264,7 @@ Game.prototype.win = function() {
 };
 
 Game.prototype.noContest = function() {
-   // TODO(eriq): Display some message.
+   $('.board-message').text('No Contest').addClass('board-message-no-contest');
    console.log('No Contest!');
 
    this.stop();
