@@ -7,7 +7,7 @@ Game.DESTROY_TIME = 250;
 Game.NEXT_GEM_WAIT_TIME = 100;
 Game.PUNISHMENT_WAIT_TIME = 10;
 
-Game.BOARD_HEIGHT = 13;
+Game.BOARD_HEIGHT = 14;
 Game.BOARD_WIDTH = 6;
 
 // Wait for the server to schedule a start.
@@ -263,6 +263,7 @@ Game.prototype.win = function() {
    this.state = Game.STATE_WIN;
 };
 
+// TODO(eriq): Getting no-contest after lose if just drop straight down.
 Game.prototype.noContest = function() {
    $('.board-message').text('No Contest').addClass('board-message-no-contest');
    console.log('No Contest!');

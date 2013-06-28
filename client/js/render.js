@@ -146,10 +146,6 @@ InternalRenderer.prototype.initBoard = function(boardId) {
 
    html += '<div class="board-meta-area">';
 
-   html += ' <div class="punishments">';
-   html += '  <div id="' + boardId + '-punishments-number">0</div>'
-   html += ' </div>';
-
    html += ' <div class="next-drop-group">';
    // Default orientation is DOWN.
    html += '  <div id="' + boardId + '-next-drop-group-first" class="next-group"></div>';
@@ -159,6 +155,14 @@ InternalRenderer.prototype.initBoard = function(boardId) {
    html += '</div>';
 
    html += '<div class="inner-board">';
+
+   html += ' <div class="board-warnings on-board-notification">';
+   html += '  <div id="' + boardId + '-warning-text"></div>'
+   html += ' </div>';
+
+   html += ' <div class="punishments on-board-notification">';
+   html += '  <div id="' + boardId + '-punishments-number">0</div>'
+   html += ' </div>';
 
    for (var row = 0; row < board.height; row++) {
       html += '<div id="' + boardId + '-' + row + '" class="board-row board-row-' + row + '">';

@@ -1,9 +1,14 @@
+html {
+   background: lightblue;
+}
+
 .boards {
    position: relative;
 }
 
 .board-message {
    position: absolute;
+   z-index: 5;
    top: 30%;
    left: 10%;
    font-size: 128px;
@@ -35,18 +40,36 @@
    vertical-align: top;
 }
 
-.punishments {
-   display: inline-block;
-   vertical-align: top;
-   outline: solid 2px black;
-   margin-right: 20px;
-   width: 2em;
+.on-board-notification {
+   position: absolute;
+   top: 0;
+
+   background-color: rgba(0, 0, 0, 0.25);
+   height: 40px;
    text-align: center;
+
+   outline: ridge 2px white;
+}
+
+.board-warnings {
+   left: 0;
+
+   width: 60px;
+   font-size: 24px;
+}
+
+.punishments {
+   right: 0;
+
+   width: 40px;
    font-size: 24px;
 }
 
 .inner-board {
    display: inline-block;
+   position: relative;
+   outline: ridge 5px white;
+   background-color: rgba(0, 0, 0, 0.25);
 }
 
 .board-row {
@@ -57,9 +80,6 @@
    height: 20px;
 
    display: inline-block;
-
-   background-image: url('../images/gems.png');
-   background-position: 0px -80px;
 }
 
 .next-drop-group {

@@ -91,7 +91,6 @@ Star.prototype.hash = function() {
    return Gem.prototype.hash.call(this) + '-star';
 };
 
-// TODO(eriq): construct from message
 function DropGroup(marshaledGroup) {
    if (marshaledGroup) {
       this.firstGem = constructGem(marshaledGroup[0]);
@@ -146,9 +145,8 @@ function orientationDelta(orientation) {
    }
 }
 
-// TODO(eriq): Get seed from server.
 // There is a constant chance that the gem will be a destroyer.
-function nextGem() {
+function nextGemForTesting() {
    var color = Math.floor(Math.random() * Gem.NUM_COLORS);
 
    var rand = Math.random();

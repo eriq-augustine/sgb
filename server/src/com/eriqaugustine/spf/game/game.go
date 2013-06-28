@@ -8,7 +8,7 @@ import (
 );
 
 const (
-   BOARD_HEIGHT = 13
+   BOARD_HEIGHT = 14
    BOARD_WIDTH = 6
 );
 

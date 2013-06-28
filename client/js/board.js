@@ -32,7 +32,6 @@ function Board(id, height, width, nextDropGroup) {
    this.height = height;
    this.width = width;
 
-   // TODO(eriq): Keep track of the opponents character (drop pattern).
    this._punishements_ = 0;
 
    // {firstGem: _, secondGem: _, orientation: _}
