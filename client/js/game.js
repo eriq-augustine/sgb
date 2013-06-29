@@ -263,13 +263,14 @@ Game.prototype.win = function() {
    this.state = Game.STATE_WIN;
 };
 
-// TODO(eriq): Getting no-contest after lose if just drop straight down.
 Game.prototype.noContest = function() {
-   $('.board-message').text('No Contest').addClass('board-message-no-contest');
-   console.log('No Contest!');
+   if (this.state != Game.STATE_WIN && this.state != Game.STATE_LOSE) {
+      $('.board-message').text('No Contest').addClass('board-message-no-contest');
+      console.log('No Contest!');
 
-   this.stop();
-   this.state = Game.STATE_NO_CONTEST;
+      this.stop();
+      this.state = Game.STATE_NO_CONTEST;
+   }
 };
 
 Game.prototype.nextTurnInfo = function(dropGroup,
