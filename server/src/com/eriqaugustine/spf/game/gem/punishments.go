@@ -32,29 +32,25 @@ func (this *DropPattern) fillCol(gems *[][]*Gem, col int, count int) {
 
 // Get the punishments gems. Note that the returned array is NOT
 //  a grid. It is the gems that go in each column.
-// Returns nil on lose.
-// TODO(eriq): Give the drops even on lose show the player can
-//  see their own defeat.
+// The second return is false if the player loses.
+// The gems will always be returned so the loser can see their own defeat.
 func GetPunishmentGems(punishments int,
                        board *[][]*Gem,
-                       pattern DropPattern) *[][]*Gem {
-   var colCounts *[]int = getColCounts(punishments, board);
-
-   if colCounts == nil {
-      return nil;
-   }
-
+                       pattern DropPattern) (*[][]*Gem, bool) {
    var gems [][]*Gem = make([][]*Gem, len((*board)[0]));
+
+   colCounts, success := getColCounts(punishments, board);
 
    for col, count := range *colCounts {
       pattern.fillCol(&gems, col, count);
    }
 
-   return &gems;
+   return &gems, success;
 }
 
 // Get the number of punishments for each column.
-func getColCounts(punishments int, board *[][]*Gem) *[]int {
+// The second return is false if the player loses.
+func getColCounts(punishments int, board *[][]*Gem) (*[]int, bool) {
    var colCounts []int = make([]int, len((*board)[0]));
    var baselines *[]int = GetBaselines(board);
    var availableCols *[]int = getAvailableCols(board, baselines, &colCounts);
@@ -82,10 +78,10 @@ func getColCounts(punishments int, board *[][]*Gem) *[]int {
 
    if punishments > 0 {
       // Lose.
-      return nil;
+      return &colCounts, false;
    }
 
-   return &colCounts;
+   return &colCounts, true;
 };
 
 // The first open slot in each column.

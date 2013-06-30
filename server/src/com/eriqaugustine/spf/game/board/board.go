@@ -48,17 +48,15 @@ func (this *Board) AdvanceTimers() {
 }
 
 // Place all punishments and return the punishments.
-func (this *Board) Punish(punishments int) *[][]*gem.Gem {
+// The second return is false on lose, however the gems will still be valid..
+func (this *Board) Punish(punishments int) (*[][]*gem.Gem, bool) {
    var punishmentGems [][]*gem.Gem = make([][]*gem.Gem, 0);
+   var success bool = true;
+   var gemPtr *[][]*gem.Gem;
 
    if punishments > 0 {
-      punishmentGems = *gem.GetPunishmentGems(punishments, &this.Board,
-                                              gem.DebugDropPattern);
-
-      if punishmentGems == nil {
-         // Lose.
-         return nil;
-      }
+      gemPtr, success = gem.GetPunishmentGems(punishments, &this.Board, gem.DebugDropPattern);
+      punishmentGems = *gemPtr;
 
       var baselines *[]int = gem.GetBaselines(&this.Board);
       for col, gems := range punishmentGems {
@@ -68,7 +66,7 @@ func (this *Board) Punish(punishments int) *[][]*gem.Gem {
       }
    }
 
-   return &punishmentGems;
+   return &punishmentGems, success;
 }
 
 // Return true if a drop can happen on the boad.

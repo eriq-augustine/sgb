@@ -106,7 +106,7 @@ func (this *Game) InitialDrops() [2][2]gem.Gem {
 // Update the boards according to a player move.
 // Return the next gem for that player and the punishments the player must take.
 // If nil is returned, then that means the player lost.
-func (this *Game) MoveUpdate(playerId int, locations [2][2]int, hash string) (*[2]gem.Gem, *[][]*gem.Gem) {
+func (this *Game) MoveUpdate(playerId int, locations [2][2]int, hash string) (*[2]gem.Gem, *[][]*gem.Gem, bool) {
    var playerOrdinal int = this.GetPlayerOrdinal(playerId);
 
    // The group being dropped is two behind the current cursor for the player.
@@ -120,20 +120,17 @@ func (this *Game) MoveUpdate(playerId int, locations [2][2]int, hash string) (*[
       panic("Board hashes differ!");
    }
 
-   var punishments *[][]*gem.Gem = this.advanceBoard(playerOrdinal);
-   if punishments == nil {
-      // Player loses.
-      return nil, nil;
-   }
+   punishments, success := this.advanceBoard(playerOrdinal);
 
    // The player just took all of their punishments.
    this.Punishments[playerOrdinal] = 0;
 
    var nextDrop = this.NextDropForPlayer(playerId);
-   return &nextDrop, punishments;
+   return &nextDrop, punishments, success;
 }
 
-func (this *Game) advanceBoard(playerOrdinal int) *[][]*gem.Gem {
+// Returns false on lose.
+func (this *Game) advanceBoard(playerOrdinal int) (*[][]*gem.Gem, bool) {
    // Advance any timers first.
    this.Boards[playerOrdinal].AdvanceTimers();
 
@@ -142,13 +139,9 @@ func (this *Game) advanceBoard(playerOrdinal int) *[][]*gem.Gem {
    // TODO(eriq): Take combos into consideration.
    var punishments int = this.adjustPunishments(playerOrdinal, destroyed);
 
-   var punishmentGems *[][]*gem.Gem = this.Boards[playerOrdinal].Punish(punishments);
+   punishmentGems, success := this.Boards[playerOrdinal].Punish(punishments);
 
-   if punishmentGems == nil || !this.Boards[playerOrdinal].CanDrop() {
-      return nil;
-   }
-
-   return punishmentGems;
+   return punishmentGems, success && this.Boards[playerOrdinal].CanDrop();
 }
 
 // |playerOrdinal| just destroyed |destroyed| number of gems.

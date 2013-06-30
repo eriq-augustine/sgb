@@ -69,15 +69,15 @@ func GameServer(ws *websocket.Conn) {
             println("Move");
 
             // TODO(eriq): This panics on no contest.
-            var dropGroup, punishments =
+            var dropGroup, punishments, success =
                activeGames[id].MoveUpdate(id, movePart.Locations,
                                           movePart.BoardHash);
 
-            if dropGroup != nil {
+            if success {
                signalNextTurn(id, dropGroup, punishments);
             } else {
                // TODO(eriq): Close the connections now.
-               signalGameOver(id, message.END_GAME_LOSE);
+               signalGameOver(id, dropGroup, punishments, message.END_GAME_LOSE);
                break SocketLifeLoop;
             }
          default:
@@ -151,7 +151,10 @@ func signalNextTurn(playerId int, dropGroup *[2]gem.Gem, punishments *[][]*gem.G
                                                    playerBoard.Board}));
 }
 
-func signalGameOver(playerId int, resolution int) {
+// TODO(eriq): Send over |dropGroup| and |punishments| to the player and the
+//  player's board to the opponent (winner).
+//  Will need to change the message.
+func signalGameOver(playerId int, dropGroup *[2]gem.Gem, punishments *[][]*gem.Gem, resolution int) {
    var currentGame *game.Game = activeGames[playerId];
    var opponentId int = currentGame.GetOpponentId(playerId);
 
