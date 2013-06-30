@@ -244,7 +244,9 @@ Game.prototype.stop = function() {
    this.state = Game.STATE_DONE;
    this.socket.close();
    this.logicWorker.postMessage('stop');
-   stopRenderer();
+
+   // TODO(eriq): Drain the render queue and then stop the renderer.
+   // stopRenderer();
 };
 
 Game.prototype.lose = function() {

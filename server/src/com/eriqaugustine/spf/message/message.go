@@ -12,15 +12,8 @@ const (
    MESSAGE_TYPE_MOVE
    MESSAGE_TYPE_NEXT_TURN
    MESSAGE_TYPE_UPDATE
-   MESSAGE_TYPE_RESOLVE_GAME
+   MESSAGE_TYPE_NO_CONTEST
    NUM_MESSAGE_TYPES
-);
-
-const (
-   END_GAME_LOSE = iota
-   END_GAME_WIN
-   END_GAME_NO_CONTEST
-   NUM_END_GAMES
 );
 
 type Message struct {
@@ -41,20 +34,22 @@ type MoveMessagePart struct {
    BoardHash string;
 };
 
+// You can only lose between turns, so just send a flag along withthe next turn info.
 type NextTurnMessagePart struct {
    Drop [2]gem.Gem;
    PlayerPunishment *[][]*gem.Gem;
    OpponentPunishment int;
+   Lose bool;
 };
 
 type UpdateMessagePart struct {
    PlayerPunishment int;
    OpponentPunishment int;
    OpponentBoard [][]*gem.Gem;
+   Win bool;
 };
 
-type ResolveGameMessagePart struct {
-   Resolution int;
+type NoContestMessagePart struct {
 };
 
 func NewMessage(messageType int, messagePart interface{}) *Message {
@@ -91,8 +86,8 @@ func (this *Message) DecodeMessagePart() interface{} {
          var part UpdateMessagePart;
          json.Unmarshal(*this.Payload, &part);
          return part;
-      case MESSAGE_TYPE_RESOLVE_GAME:
-         var part ResolveGameMessagePart;
+      case MESSAGE_TYPE_NO_CONTEST:
+         var part NoContestMessagePart;
          json.Unmarshal(*this.Payload, &part);
          return part;
       default:

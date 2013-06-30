@@ -34,26 +34,21 @@ Socket.prototype.onMessage = function(messageEvent) {
          nextTurnInfo(new DropGroup(message.Payload.Drop),
                       message.Payload.PlayerPunishment,
                       message.Payload.OpponentPunishment);
+
+         if (message.Payload.Lose) {
+            loseGame();
+         }
          break;
       case Message.TYPE_UPDATE:
          updateOpponent(message.Payload.OpponentPunishment,
                         message.Payload.OpponentBoard);
-         break;
-      case Message.TYPE_RESOLVE_GAME:
-         switch (message.Payload.Resolution) {
-            case Message.END_GAME_LOSE:
-               loseGame();
-               break;
-            case Message.END_GAME_WIN:
-               winGame();
-               break;
-            case Message.END_GAME_NO_CONTEST:
-               noContest();
-               break;
-            default:
-               error('Unknown game resolution: ' + message.Payload.Resolution);
-               break;
+
+         if (message.Payload.Win) {
+            winGame();
          }
+         break;
+      case Message.TYPE_NO_CONTEST:
+         noContest();
          break;
       default:
          // Note: There are messages that are known, but just not expected from the server.

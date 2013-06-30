@@ -73,11 +73,10 @@ func GameServer(ws *websocket.Conn) {
                activeGames[id].MoveUpdate(id, movePart.Locations,
                                           movePart.BoardHash);
 
-            if success {
-               signalNextTurn(id, dropGroup, punishments);
-            } else {
+            signalNextTurn(id, dropGroup, punishments, !success);
+
+            if !success {
                // TODO(eriq): Close the connections now.
-               signalGameOver(id, dropGroup, punishments, message.END_GAME_LOSE);
                break SocketLifeLoop;
             }
          default:
@@ -127,7 +126,7 @@ func BroadcastStart(currentGame *game.Game) {
    }
 }
 
-func signalNextTurn(playerId int, dropGroup *[2]gem.Gem, punishments *[][]*gem.Gem) {
+func signalNextTurn(playerId int, dropGroup *[2]gem.Gem, punishments *[][]*gem.Gem, playerLost bool) {
    var currentGame *game.Game = activeGames[playerId];
    var opponentOrdinal int = currentGame.GetOpponentOrdinal(playerId);
    var opponentId int = currentGame.GetOpponentId(playerId);
@@ -137,48 +136,27 @@ func signalNextTurn(playerId int, dropGroup *[2]gem.Gem, punishments *[][]*gem.G
    // Tell the player the next turn info
    var playerMessage =
       message.NewMessage(message.MESSAGE_TYPE_NEXT_TURN,
-                         message.NextTurnMessagePart{*dropGroup, punishments,
-                                                     opponentPunishments});
+                         message.NextTurnMessagePart{*dropGroup,
+                                                     punishments,
+                                                     opponentPunishments,
+                                                     playerLost});
 
    websocket.JSON.Send(connections[playerId], playerMessage);
 
-   // TODO(eriq): Update the opponent.
    websocket.JSON.Send(
       connections[opponentId],
       message.NewMessage(message.MESSAGE_TYPE_UPDATE,
                          message.UpdateMessagePart{opponentPunishments,
                                                    0,
-                                                   playerBoard.Board}));
+                                                   playerBoard.Board,
+                                                   playerLost}));
 }
 
-// TODO(eriq): Send over |dropGroup| and |punishments| to the player and the
-//  player's board to the opponent (winner).
-//  Will need to change the message.
-func signalGameOver(playerId int, dropGroup *[2]gem.Gem, punishments *[][]*gem.Gem, resolution int) {
-   var currentGame *game.Game = activeGames[playerId];
-   var opponentId int = currentGame.GetOpponentId(playerId);
+func BroadcastNoContest(currentGame *game.Game) {
+   var message = message.NewMessage(message.MESSAGE_TYPE_NO_CONTEST,
+                                    message.NoContestMessagePart{});
 
-   var playerResolution int;
-   var opponentResolution int;
-
-   switch resolution {
-      case message.END_GAME_NO_CONTEST:
-         playerResolution = message.END_GAME_NO_CONTEST;
-         opponentResolution = message.END_GAME_NO_CONTEST;
-      case message.END_GAME_LOSE:
-         playerResolution = message.END_GAME_LOSE;
-         opponentResolution = message.END_GAME_WIN;
-      case message.END_GAME_WIN:
-         playerResolution = message.END_GAME_WIN;
-         opponentResolution = message.END_GAME_LOSE;
-      default:
-         println("Unknown game resolution.");
+   for _, playerId := range currentGame.Players {
+      websocket.JSON.Send(connections[playerId], message);
    }
-
-   websocket.JSON.Send(connections[playerId],
-                       message.NewMessage(message.MESSAGE_TYPE_RESOLVE_GAME,
-                                          message.ResolveGameMessagePart{playerResolution}));
-   websocket.JSON.Send(connections[opponentId],
-                       message.NewMessage(message.MESSAGE_TYPE_RESOLVE_GAME,
-                                          message.ResolveGameMessagePart{opponentResolution}));
 }
