@@ -279,6 +279,7 @@ InternalRenderer.prototype.start = function() {
          window.requestAnimationFrame(renderLoop);
       }
 
+      // Even if the renderer has been stopped, do one last render.
       spfGet('_renderer_').update();
    })();
 };
