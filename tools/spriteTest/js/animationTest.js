@@ -33,12 +33,10 @@ function gemAnimation() {
    var frames = [];
    //TEST
    for (var i = 0; i < 10; i++) {
-      frames.push(new AnimationFrame('animation-gem-normal-' + i,
-                                     50));
+      frames.push(new AnimationFrame('animation-gem-normal-' + i, 50));
    }
 
-   //return new Animation('animation-target', frames, true);
-   return new Animation('animation-target', frames, false);
+   return new Animation('animation-target', frames, true);
 }
 
 document.addEventListener('DOMContentLoaded', function() {

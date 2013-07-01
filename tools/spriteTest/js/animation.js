@@ -1,21 +1,23 @@
 "use strict";
 
+// Must be larger than every animation frame.
+AnimationMachine.WINDOW_SIZE = 5 * 1000;
+
+// Must be smaller than every animation frame.
+AnimationMachine.BUCKET_SIZE = 20;
+
+AnimationMachine.NUM_BUCKETS = AnimationMachine.WINDOW_SIZE / AnimationMachine.BUCKET_SIZE;
+
 function AnimationMachine() {
    this.nextId = 0;
    this.animationLookup = {};
 
-   // This machine handles long animations by putting it in whatever bucket it belongs in
-   //  and then just not evaluating it if it is not active until the next iteration.
-   // Each bucket represents the animations that need to take place within the
-   //  next |this.animationBucketTime| ms.
-   this.numAnimationBuckets = 20;
-   this.animationBucketTime = 100;
-   this.animationBuckets = [];
-   this.currentBucket = 0;
    this.bucketStartTime = 0;
+   this.currentBucket = 0;
+   this.buckets = [];
 
-   for (var i = 0; i < this.numAnimationBuckets; i++) {
-      this.animationBuckets[i] = [];
+   for (var i = 0; i < AnimationMachine.NUM_BUCKETS; i++) {
+      this.buckets[i] = [];
    }
 }
 
@@ -28,7 +30,6 @@ AnimationMachine.prototype.removeAnimation = function(animationId) {
    this.animationLookup[animationId].animation.removeFrame();
    delete this.animationLookup.animationId;
 
-   // TODO(eriq): the buckets are arrays, remove from them
    for (var i = 0; i < this.animationBuckets[bucket].length; i++) {
       if (this.animationBuckets[bucket][i].id == animationId) {
          this.animationBuckets[bucket].splice(i, 1);
@@ -46,89 +47,45 @@ AnimationMachine.prototype.addAnimation = function(animation) {
    var duration = animation.advance();
    var animationTime = now + duration;
 
-   var bucket = (this.currentBucket + Math.floor(duration / this.animationBucketTime)) % this.numAnimationBuckets;
+   var bucket = (this.currentBucket + Math.floor(duration / AnimationMachine.BUCKET_SIZE)) % AnimationMachine.NUM_BUCKETS;
 
    this.animationLookup[id] = {bucket: bucket, animation: animation};
-   this.animationBuckets[bucket].push({id: id, time: animationTime, animation: animation});
-
-   //TEST
-   console.log('add: ' + now);
+   this.buckets[bucket].push({id: id, animation: animation});
 
    return id;
 };
 
-// TODO(eriq): This does not handle long deltas (from an inactive tab) well.
 AnimationMachine.prototype.maybeAnimate = function() {
    var now = Date.now();
    var delta = now - this.bucketStartTime;
 
-   //TEST
-   //console.log('time: ' + now + ", delta: " + delta);
-
    // Move through all buckets between |this.currentBucket| and |endBucket| (inclusivley).
-   var absoluteBucketDelta = Math.floor(delta / this.animationBucketTime);
+   var absoluteBucketDelta = Math.floor(delta / AnimationMachine.BUCKET_SIZE);
    // TODO(eriq): What happens when all buckets need to be iterated?
    //  Buckets will get cut off.
-   var endBucket = (this.currentBucket + absoluteBucketDelta) % this.numAnimationBuckets;
+   var endBucket = (this.currentBucket + absoluteBucketDelta) % AnimationMachine.NUM_BUCKETS;
 
    for (var i = 0; i <= absoluteBucketDelta; i++) {
-      var bucket = (this.currentBucket + i) % this.numAnimationBuckets;
-      var toRemove = [];
+      var bucket = (this.currentBucket + i) % AnimationMachine.NUM_BUCKETS;
 
-      for (var j = 0; j < this.animationBuckets[bucket].length; j++) {
-         if (this.animationBuckets[bucket][j].time <= now) {
-            var duration = this.animationBuckets[bucket][j].animation.advance();
-            toRemove.push({index: j, duration: duration});
-         }
-      }
+      var animation = null;
+      while (animation = this.buckets[bucket].shift()) {
+         var duration = animation.animation.advance();
 
-      // Remove all the used animations, and possibly reschedule them.
-      for (var j = toRemove.length - 1; j >= 0; j--) {
-         var removedAnimation = this.animationBuckets[bucket].splice(toRemove[j].index, 1)[0];
-
-         //TEST
-         console.log('IN --' + this.currentBucket +
-                     ', abs: ' + absoluteBucketDelta +
-                     ', end: ' + endBucket);
-
-         if (toRemove[j].duration == 0) {
-            delete this.animationLookup[removedAnimation.id];
-
-            //TEST
-            console.log("Final: " + now);
-            window.animate = false;
+         if (duration == 0) {
+            delete this.animationLookup[animation.id];
          } else {
-            var bucketDelta = Math.floor(toRemove[j].duration / this.animationBucketTime);
-            // If the time delta would put the next frame into
-            //  the current bucket, but the machine is moving to
-            //  the next bucket; then schedule the animation
-            //  in the next bucket to be analyzed.
-            var nextBucket = (this.currentBucket + Math.max(bucketDelta, absoluteBucketDelta)) % this.numAnimationBuckets;
+            var bucketDelta = Math.floor(duration / AnimationMachine.BUCKET_SIZE);
+            // Must always advance at least one bucket.
+            var nextBucket = (bucket + Math.max(1, bucketDelta)) % AnimationMachine.NUM_BUCKETS;
 
-            removedAnimation.time = now + toRemove[j].duration;
-
-            //TEST
-            console.log('Reschedule -- ' +
-                        ' now: ' + now +
-                        ', delta: ' + bucketDelta +
-                        ', next bucket: ' + nextBucket +
-                        ", time: " + removedAnimation.time);
-
-            this.animationLookup[removedAnimation.id].bucket = nextBucket;
-            this.animationBuckets[nextBucket].push(removedAnimation);
-
-            //TEST
-            console.log(this.animationBuckets);
+            this.animationLookup[animation.id].bucket = nextBucket;
+            this.buckets[nextBucket].push(animation);
          }
       }
    }
 
    if (absoluteBucketDelta != 0) {
-   //TEST
-   console.log('current: ' + this.currentBucket +
-               ', abs: ' + absoluteBucketDelta +
-               ', end: ' + endBucket);
-
       this.currentBucket = endBucket;
       this.bucketStartTime = now;
    }
@@ -144,41 +101,76 @@ function Animation(objectId, frames, repeat) {
 };
 
 // Remove the current animation frame from the target.
-Animation.prototype.removeFrame = function() {
+Animation.prototype.removeFrame = function(element) {
+   element = element || $('#' + this.objectId);
+
    if (this.currentFrame != -1) {
-      $('#' + this.objectId).removeClass(this.frames[this.currentFrame].animationClass);
+      element.removeClass(this.frames[this.currentFrame].animationClass);
 
       if (this.frames[this.currentFrame].postAnimationHook) {
-         this.frames[this.currentFrame].postAnimationHook.call();
+         this.frames[this.currentFrame].postAnimationHook.call(true);
       }
    }
 };
 
 // Return the next duration for this animation, or 0 if the animation is done.
-Animation.prototype.advance = function() {
+Animation.prototype.advance = function(now) {
    if (this.currentFrame >= this.frames.length) {
       // This should never happen.
       return 0;
    }
 
-   this.removeFrame();
-   this.currentFrame++;
+   var delta = now - this.lastFrameStart;
+   var element = $('#' + this.objectId);
 
-   if (this.currentFrame == this.frames.length) {
-      if (!this.repeat) {
-         return 0;
+   this.removeFrame(element);
+
+   do {
+      this.currentFrame++;
+
+      if (this.currentFrame == this.frames.length) {
+         if (!this.repeat) {
+            return 0;
+         }
+
+         this.currentFrame = 0;
       }
 
-      this.currentFrame = 0;
-   }
+      // Go until the proper frame is found.
+      delta -= this.frames[this.currentFrame].duration;
 
-   $('#' + this.objectId).addClass(this.frames[this.currentFrame].animationClass);
+      // If the frame has expired, it still may want its callback to be invoked.
+      if (delta > 0 && this.frames[this.currentFrame].expire &&
+          this.frames[this.currentFrame].postAnimationHook &&
+          this.frames[this.currentFrame].callHookIfExpired) {
+         this.frames[this.currentFrame].postAnimationHook(false);
+      }
+   } while (delta > 0 && this.frames[this.currentFrame].expire);
+
+   element.addClass(this.frames[this.currentFrame].animationClass);
+   this.lastFrameStart = now;
 
    return this.frames[this.currentFrame].duration;
 };
 
-function AnimationFrame(animationClass, duration, postAnimationHook) {
+// If |expire|, the frame will be skipped if the duration has already passed.
+// If |callHookIfExpired| is true, then |postAnimationHook| will always be called.
+// The first parameter passed to |postAnimationHook| will be a boolean indicating
+//  successfull completion of the frame (true if successful, false if canceled).
+function AnimationFrame(animationClass,
+                        duration,
+                        expire,
+                        postAnimationHook,
+                        callHookIfExpired) {
+   if (duration <= AnimationMachine.BUCKET_SIZE ||
+       duration >= AnimationMachine.WINDOW_SIZE) {
+      error('Invalid animation frame duration: ' + duration + '.' +
+            ' Must be ' + AnimationMachine.BUCKET_SIZE + ' < duration < ' + AnimationMachine.WINDOW_SIZE);
+   }
+
    this.animationClass = animationClass;
    this.duration = duration;
-   this.postAnimationHook = postAnimationHook;
+   this.expire = expire || false;
+   this.postAnimationHook = postAnimationHook || null;
+   this.callHookIfExpires = callHookIfExpired || false;
 }
