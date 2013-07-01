@@ -81,6 +81,13 @@ function requestCellRender(boardId, row, col) {
    }
 }
 
+// Request the destruction of a gem. This will trigger an animation on the cell.
+function requestDestroyGem(boardId, row, col, color) {
+   if (spfGet('_renderer_')) {
+      spfGet('_renderer_').addUpdate({type: 'destroyGem', boardId: boardId, row: row, col: col, color: color});
+   }
+}
+
 // Request a re-render of the next drop group display.
 function requestNextDropGroupRender(boardId) {
    if (spfGet('_renderer_')) {
@@ -99,6 +106,10 @@ function requestPunishmentRender(boardId) {
 function InternalRenderer() {
    this.render = true;
    this.updates = [];
+
+   // The number of destruction animations active.
+   // Then they zero, callback to the server.
+   this.activeDestructions = 0;
 
    // Internal representations of the boards.
    // Holds ids (and animation ids of all gems on the board).
@@ -130,14 +141,16 @@ InternalRenderer.prototype.update = function() {
          case 'punishments':
             this.renderPunishments(updateData.boardId);
             break;
+         case 'destroyGem':
+            this.renderDestroyGem(updateData.boardId, updateData.row, updateData.col, updateData.color);
+            break;
          default:
             error('Unknown update type: ' + updateData.type);
             break;
       }
    }
 
-   // TODO(eriq): Animations
-   // this.animationMachine.maybeAnimate();
+   this.animationMachine.maybeAnimate();
 };
 
 InternalRenderer.prototype.initBoard = function(boardId) {
@@ -220,19 +233,22 @@ InternalRenderer.prototype.renderBoard = function(boardId) {
    this.renderPunishments(boardId);
 };
 
-// TODO(eriq): Don't break animations.
 InternalRenderer.prototype.renderCell = function(boardId, row, col) {
    var gem = getBoard(boardId).getGem(row, col);
    var cellId = boardId + '-' + row + '-' + col;
    this.renderGem(cellId, gem);
 };
 
-InternalRenderer.prototype.renderGem = function(gemRenderId, gem) {
-   var cell = $('#' + gemRenderId);
-   // Remove all gem related classes.
+// Remove all renderer related classes.
+InternalRenderer.prototype.removeRenderClasses = function(cell) {
    if (cell.attr('class')) {
       cell.attr('class', cell.attr('class').replace(/renderer-gem?\S*/g, ''));
    }
+};
+
+InternalRenderer.prototype.renderGem = function(gemRenderId, gem) {
+   var cell = $('#' + gemRenderId);
+   this.removeRenderClasses(cell);
 
    if (gem) {
       switch (gem.type) {
@@ -255,6 +271,34 @@ InternalRenderer.prototype.renderGem = function(gemRenderId, gem) {
          default:
             error('Unknown gem type: ' + gem.type);
       }
+   }
+};
+
+InternalRenderer.prototype.renderDestroyGem = function(boardId, row, col, color) {
+   var cellId = boardId + '-' + row + '-' + col;
+   var cell = $('#' + cellId);
+   this.removeRenderClasses(cell);
+
+   cell.addClass('renderer-gem');
+
+   var callback = this.completeDestructionAnimation.bind(this, cellId);
+
+   this.animationMachine.addAnimation(destructionAnimation(color, cellId, callback));
+
+   this.activeDestructions++;
+};
+
+// The final callback in a gem animation.
+// Will complete the render.
+InternalRenderer.prototype.completeDestructionAnimation = function(cellId, expired) {
+   //TEST
+   console.log('callback');
+
+   this.removeRenderClasses($('#' + cellId));
+
+   this.activeDestructions--;
+   if (this.activeDestructions == 0) {
+      destructionComplete();
    }
 };
 
@@ -287,26 +331,3 @@ InternalRenderer.prototype.start = function() {
 InternalRenderer.prototype.stop = function() {
    this.render = false;
 };
-
-/*
-document.addEventListener('DOMContentLoaded', function() {
-   window.breakAnimation = false;
-   window.animationMachine = new AnimationMachine();
-
-   var gemAnimation = new Animation('theGem', [new AnimationFrame('gem-0', 100, console.log.bind(console, 'Hook: 0')),
-                                               new AnimationFrame('gem-1', 100, console.log.bind(console, 'Hook: 1')),
-                                               new AnimationFrame('gem-2', 100, console.log.bind(console, 'Hook: 2')),
-                                               new AnimationFrame('gem-3', 100, console.log.bind(console, 'Hook: 3'))],
-                                    true);
-   window.animationMachine.addAnimation(gemAnimation);
-   window.animationMachine.start();
-
-   (function animloop(){
-      if (!window.breakAnimation) {
-         window.requestAnimationFrame(animloop);
-      }
-
-      window.animationMachine.maybeAnimate();
-   })();
-});
-*/

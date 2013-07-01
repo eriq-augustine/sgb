@@ -20,69 +20,168 @@
    background-position: 0px -60px;
 }
 
-.animation-gem-normal-0-0 {
-   background-position: 0px 0px;
+/*** Destruction animation ***/
+.animation-gem-destroy-0-0 {
+   background-position: 0px -0px;
 }
 
-.animation-gem-normal-0-1 {
-   background-position: -20px 0px;
+.animation-gem-destroy-0-1 {
+   background-position: -20px -0px;
 }
 
-.animation-gem-normal-0-2 {
-   background-position: -40px 0px;
+.animation-gem-destroy-0-2 {
+   background-position: -40px -0px;
 }
 
-.animation-gem-normal-0-3 {
-   background-position: -60px 0px;
+.animation-gem-destroy-0-3 {
+   background-position: -60px -0px;
 }
 
-.animation-gem-normal-1-0 {
+.animation-gem-destroy-0-4 {
+   background-position: -80px -0px;
+}
+
+.animation-gem-destroy-0-5 {
+   background-position: -100px -0px;
+}
+
+.animation-gem-destroy-0-6 {
+   background-position: -120px -0px;
+}
+
+.animation-gem-destroy-0-7 {
+   background-position: -140px -0px;
+}
+
+.animation-gem-destroy-0-8 {
+   background-position: -160px -0px;
+}
+
+.animation-gem-destroy-0-9 {
+   background-position: -180px -0px;
+}
+
+.animation-gem-destroy-1-0 {
    background-position: 0px -20px;
 }
 
-.animation-gem-normal-1-1 {
+.animation-gem-destroy-1-1 {
    background-position: -20px -20px;
 }
 
-.animation-gem-normal-1-2 {
+.animation-gem-destroy-1-2 {
    background-position: -40px -20px;
 }
 
-.animation-gem-normal-1-3 {
+.animation-gem-destroy-1-3 {
    background-position: -60px -20px;
 }
 
-.animation-gem-normal-2-0 {
+.animation-gem-destroy-1-4 {
+   background-position: -80px -20px;
+}
+
+.animation-gem-destroy-1-5 {
+   background-position: -100px -20px;
+}
+
+.animation-gem-destroy-1-6 {
+   background-position: -120px -20px;
+}
+
+.animation-gem-destroy-1-7 {
+   background-position: -140px -20px;
+}
+
+.animation-gem-destroy-1-8 {
+   background-position: -160px -20px;
+}
+
+.animation-gem-destroy-1-9 {
+   background-position: -180px -20px;
+}
+
+.animation-gem-destroy-2-0 {
    background-position: 0px -40px;
 }
 
-.animation-gem-normal-2-1 {
+.animation-gem-destroy-2-1 {
    background-position: -20px -40px;
 }
 
-.animation-gem-normal-2-2 {
+.animation-gem-destroy-2-2 {
    background-position: -40px -40px;
 }
 
-.animation-gem-normal-2-3 {
+.animation-gem-destroy-2-3 {
    background-position: -60px -40px;
 }
 
-.animation-gem-normal-3-0 {
+.animation-gem-destroy-2-4 {
+   background-position: -80px -40px;
+}
+
+.animation-gem-destroy-2-5 {
+   background-position: -100px -40px;
+}
+
+.animation-gem-destroy-2-6 {
+   background-position: -120px -40px;
+}
+
+.animation-gem-destroy-2-7 {
+   background-position: -140px -40px;
+}
+
+.animation-gem-destroy-2-8 {
+   background-position: -160px -40px;
+}
+
+.animation-gem-destroy-2-9 {
+   background-position: -180px -40px;
+}
+
+.animation-gem-destroy-3-0 {
    background-position: 0px -60px;
 }
 
-.animation-gem-normal-3-1 {
+.animation-gem-destroy-3-1 {
    background-position: -20px -60px;
 }
 
-.animation-gem-normal-3-2 {
+.animation-gem-destroy-3-2 {
    background-position: -40px -60px;
 }
 
-.animation-gem-normal-3-3 {
+.animation-gem-destroy-3-3 {
    background-position: -60px -60px;
 }
+
+.animation-gem-destroy-3-4 {
+   background-position: -80px -60px;
+}
+
+.animation-gem-destroy-3-5 {
+   background-position: -100px -60px;
+}
+
+.animation-gem-destroy-3-6 {
+   background-position: -120px -60px;
+}
+
+.animation-gem-destroy-3-7 {
+   background-position: -140px -60px;
+}
+
+.animation-gem-destroy-3-8 {
+   background-position: -160px -60px;
+}
+
+.animation-gem-destroy-3-9 {
+   background-position: -180px -60px;
+}
+
+/*** Destroyers ***/
 
 .renderer-gem-destroyer-0 {
    background-position: 0px -100px;

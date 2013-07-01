@@ -3,7 +3,6 @@
 // Some time constants.
 Game.DROP_TIME = 750;
 Game.UNSUPPORTED_DROP_TIME = 200;
-Game.DESTROY_TIME = 250;
 Game.NEXT_GEM_WAIT_TIME = 100;
 Game.PUNISHMENT_WAIT_TIME = 10;
 
@@ -85,6 +84,10 @@ function updateOpponent(punishments, board) {
    spfGet('_game_').updateOpponent(punishments, board);
 }
 
+function destructionComplete() {
+   spfGet('_game_').destructionComplete();
+}
+
 function Game() {
    this.logicWorker = new Worker("js/logicTimer.js");
    this.logicWorker.onmessage = function(evt) {
@@ -99,6 +102,9 @@ function Game() {
    this.dropQueue = [];
 
    initRenderer();
+
+   // True if there are destruction animations going on.
+   this.activeDestruction = false;
 
    this.socket = new Socket();
 
@@ -150,6 +156,10 @@ Game.prototype.changeOrientation = function() {
    }
 };
 
+Game.prototype.destructionComplete = function() {
+   this.activeDestruction = false;
+};
+
 Game.prototype.gameTick = function() {
    var now = Date.now();
 
@@ -164,24 +174,22 @@ Game.prototype.gameTick = function() {
          }
          break;
       case Game.STATE_UNCONTROLLED_DROP:
-         if (now - this.lastDrop >= Game.UNSUPPORTED_DROP_TIME) {
+         if (!this.activeDestruction && now - this.lastDrop >= Game.UNSUPPORTED_DROP_TIME) {
             this.playerBoard.dropUnsupported();
             this.lastDrop = now;
             this.state = Game.STATE_TRY_DESTROY;
          }
          break;
       case Game.STATE_TRY_DESTROY:
-         if (now - this.lastDrop >= Game.DESTROY_TIME) {
-            this.lastDrop = now;
-            var destroyed = this.playerBoard.attemptDestroy();
+         this.lastDrop = now;
+         var destroyed = this.playerBoard.attemptDestroy();
 
-            // See if there are any destroyed gems.
-            if (destroyed > 0) {
-               // TODO(eriq): Fancy destruction animation.
-               this.state = Game.STATE_UNCONTROLLED_DROP;
-            } else {
-               this.state = Game.STATE_PUNISHMENT;
-            }
+         // See if there are any destroyed gems.
+         if (destroyed > 0) {
+            this.activeDestruction = true;
+            this.state = Game.STATE_UNCONTROLLED_DROP;
+         } else {
+            this.state = Game.STATE_PUNISHMENT;
          }
          break;
       case Game.STATE_PUNISHMENT:

@@ -457,7 +457,7 @@ Board.prototype.attemptDestroy = function() {
 
    // TODO(eriq): Fancy animation.
    for (var index in toDestroy) {
-      this.clearGem(Math.floor(index / this.width), index - (Math.floor(index / this.width) * this.width));
+      this.clearGem(Math.floor(index / this.width), index - (Math.floor(index / this.width) * this.width), true);
       destroyed++;
    }
 
@@ -646,7 +646,7 @@ Board.prototype.placeGem = function(gem, row, col, move) {
 
 // This should be the ONLY way that gems are cleared from the board.
 // It is an error to try to remove a gem that doesn't exist.
-Board.prototype.clearGem = function(row, col) {
+Board.prototype.clearGem = function(row, col, destroy) {
    if (!this.inBounds(row, col)) {
       error("Gem removal out-of-bounds. Requested (" + row + ", " + col +
             "). Dimensions: " + this.height + " x " + this.width + ".");
@@ -661,7 +661,12 @@ Board.prototype.clearGem = function(row, col) {
    var tempGem = this._board_[row][col];
    this._board_[row][col] = null;
 
-   requestCellRender(this.id, row, col);
+   if (destroy) {
+      // TODO(eriq): Make animations for the other types.
+      requestDestroyGem(this.id, row, col, tempGem.color);
+   } else {
+      requestCellRender(this.id, row, col);
+   }
 
    return tempGem;
 };
