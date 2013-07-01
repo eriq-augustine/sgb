@@ -1,0 +1,45 @@
+.animation-gem {
+   width: 20px;
+   height: 20px;
+   background-image: url('../images/gems.png');
+}
+
+.animation-gem-normal-0 {
+   background-position: 0px 0px;
+}
+
+.animation-gem-normal-1 {
+   background-position: -20px 0px;
+}
+
+.animation-gem-normal-2 {
+   background-position: -40px 0px;
+}
+
+.animation-gem-normal-3 {
+   background-position: -60px 0px;
+}
+
+.animation-gem-normal-4 {
+   background-position: -80px 0px;
+}
+
+.animation-gem-normal-5 {
+   background-position: -100px 0px;
+}
+
+.animation-gem-normal-6 {
+   background-position: -120px 0px;
+}
+
+.animation-gem-normal-7 {
+   background-position: -140px 0px;
+}
+
+.animation-gem-normal-8 {
+   background-position: -160px 0px;
+}
+
+.animation-gem-normal-9 {
+   background-position: -180px 0px;
+}
