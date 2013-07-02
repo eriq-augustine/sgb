@@ -22,9 +22,6 @@ Socket.prototype.onMessage = function(messageEvent) {
       return false;
    }
 
-   // TEST
-   console.log(message);
-
    switch (message.Type) {
       case Message.TYPE_START:
          startGame([new DropGroup(message.Payload.Drops[0]),

@@ -192,9 +192,6 @@ Board.prototype.modifyOpponentDropGroup = function(firstRow, firstCol, secondRow
    } else {
       this.dropGroup.orientation = DropGroup.ORIENTATION_LEFT;
    }
-
-   //TEST
-   console.log(this.dropGroup);
 };
 
 Board.prototype.canMoveDropGroup = function(rowDelta, colDelta) {
@@ -475,7 +472,6 @@ Board.prototype.attemptDestroy = function() {
 
    var destroyed = 0;
 
-   // TODO(eriq): Fancy animation.
    for (var index in toDestroy) {
       this.clearGem(Math.floor(index / this.width), index - (Math.floor(index / this.width) * this.width), true);
       destroyed++;
