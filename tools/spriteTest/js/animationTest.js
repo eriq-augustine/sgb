@@ -31,9 +31,9 @@
 
 function gemAnimation() {
    var frames = [];
-   //TEST
    for (var i = 0; i < 10; i++) {
-      frames.push(new AnimationFrame('animation-gem-normal-' + i, 50));
+      //frames.push(new AnimationFrame('animation-gem-normal-' + i, 50));
+      frames.push(new AnimationFrame('animation-star-destroy-' + i, 50));
    }
 
    return new Animation('animation-target', frames, true);

@@ -683,7 +683,7 @@ Board.prototype.clearGem = function(row, col, destroy) {
 
    if (destroy) {
       // TODO(eriq): Make animations for the other types.
-      requestDestroyGem(this.id, row, col, tempGem.color);
+      requestDestroy(this.id, row, col, tempGem.type, tempGem.color);
    } else {
       requestCellRender(this.id, row, col);
    }

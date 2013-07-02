@@ -82,9 +82,12 @@ function requestCellRender(boardId, row, col) {
 }
 
 // Request the destruction of a gem. This will trigger an animation on the cell.
-function requestDestroyGem(boardId, row, col, color) {
+function requestDestroy(boardId, row, col, type, color) {
    if (spfGet('_renderer_')) {
-      spfGet('_renderer_').addUpdate({type: 'destroyGem', boardId: boardId, row: row, col: col, color: color});
+      spfGet('_renderer_').addUpdate({type: 'destroyGem',
+                                      boardId: boardId,
+                                      row: row, col: col,
+                                      gemType: type, color: color});
    }
 }
 
@@ -142,7 +145,9 @@ InternalRenderer.prototype.update = function() {
             this.renderPunishments(updateData.boardId);
             break;
          case 'destroyGem':
-            this.renderDestroyGem(updateData.boardId, updateData.row, updateData.col, updateData.color);
+            this.renderDestroy(updateData.boardId,
+                               updateData.row, updateData.col,
+                               updateData.gemType, updateData.color);
             break;
          default:
             error('Unknown update type: ' + updateData.type);
@@ -270,11 +275,12 @@ InternalRenderer.prototype.renderGem = function(gemRenderId, gem) {
             break;
          default:
             error('Unknown gem type: ' + gem.type);
+            break;
       }
    }
 };
 
-InternalRenderer.prototype.renderDestroyGem = function(boardId, row, col, color) {
+InternalRenderer.prototype.renderDestroy = function(boardId, row, col, type, color) {
    var cellId = boardId + '-' + row + '-' + col;
    var cell = $('#' + cellId);
    this.removeRenderClasses(cell);
@@ -283,7 +289,7 @@ InternalRenderer.prototype.renderDestroyGem = function(boardId, row, col, color)
 
    var callback = this.completeDestructionAnimation.bind(this, cellId);
 
-   this.animationMachine.addAnimation(destructionAnimation(color, cellId, callback));
+   this.animationMachine.addAnimation(destructionAnimation(type, color, cellId, callback));
 
    this.activeDestructions++;
 };

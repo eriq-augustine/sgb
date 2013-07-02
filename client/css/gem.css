@@ -181,6 +181,46 @@
    background-position: -180px -60px;
 }
 
+.animation-star-destroy-0 {
+   background-position: 0px -180px;
+}
+
+.animation-star-destroy-1 {
+   background-position: -20px -180px;
+}
+
+.animation-star-destroy-2 {
+   background-position: -40px -180px;
+}
+
+.animation-star-destroy-3 {
+   background-position: -60px -180px;
+}
+
+.animation-star-destroy-4 {
+   background-position: -80px -180px;
+}
+
+.animation-star-destroy-5 {
+   background-position: -100px -180px;
+}
+
+.animation-star-destroy-6 {
+   background-position: -120px -180px;
+}
+
+.animation-star-destroy-7 {
+   background-position: -140px -180px;
+}
+
+.animation-star-destroy-8 {
+   background-position: -160px -180px;
+}
+
+.animation-star-destroy-9 {
+   background-position: -180px -180px;
+}
+
 /*** Destroyers ***/
 
 .renderer-gem-destroyer-0 {
