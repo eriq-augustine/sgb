@@ -40,9 +40,11 @@ Socket.prototype.onMessage = function(messageEvent) {
          }
          break;
       case Message.TYPE_UPDATE:
+         var nextDrop = message.Payload.Win ? null : new DropGroup(message.Payload.OpponentNextDropGroup);
+
          updateOpponent(message.Payload.OpponentPunishment,
                         message.Payload.OpponentBoard,
-                        new DropGroup(message.Payload.OpponentNextDropGroup));
+                        nextDrop);
 
          if (message.Payload.Win) {
             winGame();
@@ -59,23 +61,6 @@ Socket.prototype.onMessage = function(messageEvent) {
          error('Unknown Message Type: ' + message.Type);
          break;
    }
-
-/*
-   if (data.type == 'ack' && data.status == 'ok') {
-      loadGame(data.seed);
-   }
-   else if (data.type == 'update') {
-      window.game.updateOpponent(data.board);
-   }
-   else if (data.type == 'punishment') {
-      window.game.addPunishments(data.colors);
-   }
-   else if (data.type == 'gameover') {
-      if (data.reason == 'win') {
-         window.game.win();
-      }
-   }
-*/
 };
 
 Socket.prototype.onClose = function(messageEvent) {

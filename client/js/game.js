@@ -326,7 +326,10 @@ Game.prototype.nextTurnInfo = function(dropGroup,
 Game.prototype.updateOpponent = function(punishments, board, nextDrop) {
    this.opponentBoard.modifyPunishments(punishments);
    this.opponentBoard.updateBoard(board);
-   this.opponentBoard.releaseGem(nextDrop);
+
+   if (nextDrop) {
+      this.opponentBoard.releaseGem(nextDrop);
+   }
 };
 
 document.addEventListener('DOMContentLoaded', function() {
