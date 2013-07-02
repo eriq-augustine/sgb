@@ -19,9 +19,11 @@ function destructionAnimation(type, color, id, callback) {
 function getDestructionFrames(type, color) {
    switch (type) {
       case Gem.TYPE_NORMAL:
-      case Gem.TYPE_DESTROYER:
       case Gem.TYPE_LOCKED:
          return getNormalDestructionFrames(color);
+         break;
+      case Gem.TYPE_DESTROYER:
+         return getDestroyerDestructionFrames(color);
          break;
       case Gem.TYPE_STAR:
          return getStarDestructionFrames();
@@ -37,6 +39,18 @@ function getNormalDestructionFrames(color) {
 
    for (var i = 0; i < NUM_DESTRUCTION_FRAMES; i++) {
       frames.push(new AnimationFrame('animation-gem-destroy-' + color + '-' + i,
+                                     NORMAL_DESTRUCTION_ANIMATION_LENGTH,
+                                     true /* expire */));
+   }
+
+   return frames;
+}
+
+function getDestroyerDestructionFrames(color) {
+   var frames = [];
+
+   for (var i = 0; i < NUM_DESTRUCTION_FRAMES; i++) {
+      frames.push(new AnimationFrame('animation-destroyer-destroy-' + color + '-' + i,
                                      NORMAL_DESTRUCTION_ANIMATION_LENGTH,
                                      true /* expire */));
    }
