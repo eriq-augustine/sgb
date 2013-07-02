@@ -18,7 +18,7 @@ function createBaseMessage(type, payload) {
 function createInitMessage() {
    return createBaseMessage(Message.TYPE_INIT, {Time: new Date()});
 }
-   
+
 function createMoveMessage(dropGemLocations, boardHash) {
    return createBaseMessage(Message.TYPE_MOVE,
                             {Locations: [[dropGemLocations.first.row, dropGemLocations.first.col],

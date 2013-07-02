@@ -97,15 +97,11 @@ Board.prototype.dropPunishmentRow = function(punishments) {
    return dropped;
 };
 
+// Note: lose conditions are checked on the server side.
 Board.prototype.releaseGem = function(newDropGroup) {
    this.updateDropGroup(newDropGroup.clone());
 
    var delta = orientationDelta(this.dropGroup.orientation);
-
-   if (this.getGem(0, this.DROP_COLUMN) || this.getGem(1, this.DROP_COLUMN)) {
-      loseGame()
-      return false;
-   }
 
    this.placeGem(this.dropGroup.firstGem,
                  this.dropGroupLocation.row,
