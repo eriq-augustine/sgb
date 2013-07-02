@@ -12,6 +12,7 @@ const (
    MESSAGE_TYPE_MOVE
    MESSAGE_TYPE_NEXT_TURN
    MESSAGE_TYPE_UPDATE
+   MESSAGE_TYPE_DROP_GROUP_UPDATE
    MESSAGE_TYPE_NO_CONTEST
    NUM_MESSAGE_TYPES
 );
@@ -46,7 +47,12 @@ type UpdateMessagePart struct {
    PlayerPunishment int;
    OpponentPunishment int;
    OpponentBoard [][]*gem.Gem;
+   OpponentNextDropGroup [2]gem.Gem;
    Win bool;
+};
+
+type DropGroupUpdateMessagePart struct {
+   Locations [2][2]int;
 };
 
 type NoContestMessagePart struct {
@@ -84,6 +90,10 @@ func (this *Message) DecodeMessagePart() interface{} {
          return part;
       case MESSAGE_TYPE_UPDATE:
          var part UpdateMessagePart;
+         json.Unmarshal(*this.Payload, &part);
+         return part;
+      case MESSAGE_TYPE_DROP_GROUP_UPDATE:
+         var part DropGroupUpdateMessagePart;
          json.Unmarshal(*this.Payload, &part);
          return part;
       case MESSAGE_TYPE_NO_CONTEST:

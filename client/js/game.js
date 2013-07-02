@@ -80,12 +80,16 @@ function nextTurnInfo(dropGroup, playerPunishments, opponentPunishments) {
                                  opponentPunishments);
 }
 
-function updateOpponent(punishments, board) {
-   spfGet('_game_').updateOpponent(punishments, board);
+function updateOpponent(punishments, board, dropGroup) {
+   spfGet('_game_').updateOpponent(punishments, board, dropGroup);
 }
 
 function destructionComplete() {
    spfGet('_game_').destructionComplete();
+}
+
+function opponentDropGroupUpdate(dropGemLocations) {
+   spfGet('_game_').opponentDropGroupUpdate(dropGemLocations);
 }
 
 function Game() {
@@ -114,6 +118,18 @@ function Game() {
    this.frozenPunishments = null;
 }
 
+Game.prototype.opponentDropGroupUpdate = function(dropGemLocations) {
+   this.opponentBoard.modifyOpponentDropGroup(
+         dropGemLocations[0][0], dropGemLocations[0][1],
+         dropGemLocations[1][0], dropGemLocations[1][1]);
+};
+
+Game.prototype.sendDropGroup = function() {
+   if (this.playerBoard.dropGroup) {
+      this.socket.sendDropGroupUpdate(this.playerBoard.getDropGemLocations());
+   }
+};
+
 Game.prototype.controlledDropComplete = function(dropGemLocations, hash) {
    this.lastDrop = Date.now();
    this.state = Game.STATE_UNCONTROLLED_DROP;
@@ -129,18 +145,24 @@ Game.prototype.dropNow = function() {
    if (this.state === Game.STATE_CONTROLLED_DROP) {
       this.playerBoard.advanceDropGroupFull();
    }
+
+   this.sendDropGroup();
 };
 
 Game.prototype.goLeft = function() {
    if (this.state === Game.STATE_CONTROLLED_DROP) {
       this.playerBoard.moveDropGroup(0, -1);
    }
+
+   this.sendDropGroup();
 };
 
 Game.prototype.goRight = function() {
    if (this.state === Game.STATE_CONTROLLED_DROP) {
       this.playerBoard.moveDropGroup(0, 1);
    }
+
+   this.sendDropGroup();
 };
 
 Game.prototype.goDown = function() {
@@ -148,12 +170,16 @@ Game.prototype.goDown = function() {
       this.lastDrop = Date.now();
       this.playerBoard.advanceDropGroup();
    }
+
+   this.sendDropGroup();
 };
 
 Game.prototype.changeOrientation = function() {
    if (this.state === Game.STATE_CONTROLLED_DROP) {
       this.playerBoard.changeDropOrientation();
    }
+
+   this.sendDropGroup();
 };
 
 Game.prototype.destructionComplete = function() {
@@ -242,6 +268,9 @@ Game.prototype.start = function(dropGroups) {
 
    this.dropQueue.push(dropGroups[1]);
 
+   // Release the opponent's drop group.
+   this.opponentBoard.releaseGem(this.dropQueue[0]);
+
    this.lastDrop = Date.now();
    this.state = Game.STATE_NEXT_GEM;
    this.logicWorker.postMessage('start');
@@ -294,9 +323,10 @@ Game.prototype.nextTurnInfo = function(dropGroup,
    this.opponentBoard.modifyPunishments(opponentPunishments);
 };
 
-Game.prototype.updateOpponent = function(punishments, board) {
+Game.prototype.updateOpponent = function(punishments, board, nextDrop) {
    this.opponentBoard.modifyPunishments(punishments);
    this.opponentBoard.updateBoard(board);
+   this.opponentBoard.releaseGem(nextDrop);
 };
 
 document.addEventListener('DOMContentLoaded', function() {

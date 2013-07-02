@@ -82,6 +82,10 @@ func (this *Game) NextDropForPlayer(playerId int) [2]gem.Gem {
    return this.nextDrop(this.GetPlayerOrdinal(playerId));
 }
 
+func (this *Game) CurrentDropForPlayer(playerId int) [2]gem.Gem {
+   return this.dropGroups[this.playerDropCursors[this.GetPlayerOrdinal(playerId)] - 1];
+}
+
 func (this *Game) InitialDrops() [2][2]gem.Gem {
    if (this.playerDropCursors[0] != -1 ||
        this.playerDropCursors[1] != -1 ||
@@ -157,4 +161,9 @@ func (this *Game) adjustPunishments(playerOrdinal int, destroyed int) int {
    this.Punishments[playerOrdinal] = newPunishment;
 
    return newPunishment;
+}
+
+// Check to see if the spot on the player's board is open.
+func (this *Game) AvailableSpot(playerId int, row int, col int) bool {
+   return this.Boards[this.GetPlayerOrdinal(playerId)].AvailableSpot(row, col);
 }

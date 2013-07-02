@@ -79,6 +79,24 @@ func GameServer(ws *websocket.Conn) {
                // TODO(eriq): Close the connections now.
                break SocketLifeLoop;
             }
+         case message.DropGroupUpdateMessagePart:
+            //TEST
+            fmt.Println("%+v", messagePart);
+
+            var dropGroupUpdatePart, _ = messagePart.(message.DropGroupUpdateMessagePart);
+
+            // Verify that the given location is valid.
+            // If invalid, just ignore.
+            if !activeGames[id].AvailableSpot(id, dropGroupUpdatePart.Locations[0][0],
+                                              dropGroupUpdatePart.Locations[0][1]) ||
+               !activeGames[id].AvailableSpot(id, dropGroupUpdatePart.Locations[1][0],
+                                              dropGroupUpdatePart.Locations[1][1]) {
+               // TODO(eriq): Log
+               fmt.Println("Bad Drop Group Update: %+v", dropGroupUpdatePart.Locations);
+               continue;
+            }
+
+            sendDropGroupUpdate(id, dropGroupUpdatePart);
          default:
             fmt.Println("Unknow type: ", msgType);
             continue;
@@ -88,6 +106,13 @@ func GameServer(ws *websocket.Conn) {
    closeGame(id);
 
    println("On Close");
+}
+
+func sendDropGroupUpdate(playerId int, messagePart message.DropGroupUpdateMessagePart) {
+   var msg = message.NewMessage(message.MESSAGE_TYPE_DROP_GROUP_UPDATE,
+                                    messagePart);
+   var ws = connections[activeGames[playerId].GetOpponentId(playerId)];
+   websocket.JSON.Send(ws, msg);
 }
 
 func closeGame(playerId int) {
@@ -149,6 +174,7 @@ func signalNextTurn(playerId int, dropGroup *[2]gem.Gem, punishments *[][]*gem.G
                          message.UpdateMessagePart{opponentPunishments,
                                                    0,
                                                    playerBoard.Board,
+                                                   currentGame.CurrentDropForPlayer(playerId),
                                                    playerLost}));
 }
 

@@ -40,7 +40,7 @@ function Board(id, height, width, nextDropGroup) {
    this.dropGroupLocation = null;
 
    // The next gem to be dropped.
-   this._nextDropGroup_ = nextDropGroup;
+   this._nextDropGroup_ = nextDropGroup.clone();
 
    this._board_ = [];
    for (var i = 0; i < this.height; i++) {
@@ -97,9 +97,8 @@ Board.prototype.dropPunishmentRow = function(punishments) {
    return dropped;
 };
 
-// TODO(eriq): Also check end game during punishment.
 Board.prototype.releaseGem = function(newDropGroup) {
-   this.updateDropGroup(newDropGroup);
+   this.updateDropGroup(newDropGroup.clone());
 
    var delta = orientationDelta(this.dropGroup.orientation);
 
@@ -145,7 +144,6 @@ Board.prototype.advanceDropGroupFull = function() {
 
 Board.prototype.advanceDropGroup = function() {
    if (!this.moveDropGroup(1, 0)) {
-      // TODO(eriq): Make sure
       dropComplete(this.getDropGemLocations(), this.hash());
       this.dropGroup = null;
       this.dropGroupLocation = null;
@@ -160,7 +158,13 @@ Board.prototype.moveDropGroup = function(rowDelta, colDelta) {
    if (!this.canMoveDropGroup(rowDelta, colDelta)) {
       return false;
    }
+  
+   var dropGems = this.getDropGemLocations();
+   return this.placeDropGroup(dropGems.first.row + rowDelta, dropGems.first.col + colDelta,
+                              dropGems.second.row + rowDelta, dropGems.second.col + colDelta);
+}
 
+Board.prototype.placeDropGroup = function(firstRow, firstCol, secondRow, secondCol) {
    var dropGems = this.getDropGemLocations();
 
    // Because we don't want to have to check the orientations,
@@ -168,13 +172,33 @@ Board.prototype.moveDropGroup = function(rowDelta, colDelta) {
    var firstGem = this.clearGem(dropGems.first.row, dropGems.first.col);
    var secondGem = this.clearGem(dropGems.second.row, dropGems.second.col);
 
-   this.placeGem(firstGem, dropGems.first.row + rowDelta, dropGems.first.col + colDelta);
-   this.placeGem(secondGem, dropGems.second.row + rowDelta, dropGems.second.col + colDelta);
+   this.placeGem(firstGem, firstRow, firstCol);
+   this.placeGem(secondGem, secondRow, secondCol);
 
-   this.dropGroupLocation.row = this.dropGroupLocation.row + rowDelta;
-   this.dropGroupLocation.col = this.dropGroupLocation.col + colDelta;
+   this.dropGroupLocation.row = firstRow;
+   this.dropGroupLocation.col = firstCol;
 
    return true;
+};
+
+// For opponent boards only.
+// TODO(eriq): Make a formal (inheritance) difference between player and opponent boards.
+Board.prototype.modifyOpponentDropGroup = function(firstRow, firstCol, secondRow, secondCol) {
+   this.placeDropGroup(firstRow, firstCol, secondRow, secondCol);
+
+   // After the placement, udate the orientation.
+   if (firstRow < secondRow) {
+      this.dropGroup.orientation = DropGroup.ORIENTATION_DOWN;
+   } else if (firstRow > secondRow) {
+      this.dropGroup.orientation = DropGroup.ORIENTATION_UP;
+   } else if (firstCol < secondCol) {
+      this.dropGroup.orientation = DropGroup.ORIENTATION_RIGHT;
+   } else {
+      this.dropGroup.orientation = DropGroup.ORIENTATION_LEFT;
+   }
+
+   //TEST
+   console.log(this.dropGroup);
 };
 
 Board.prototype.canMoveDropGroup = function(rowDelta, colDelta) {
@@ -605,6 +629,7 @@ Board.prototype.advanceTimers = function() {
 };
 
 // To be used for opponent boards only.
+// This will also invalidate the current drop group.
 // This method is allowed to access |this._board_|.
 Board.prototype.updateBoard = function(board) {
    for (var i = 0; i < this.height; i++) {
@@ -616,6 +641,9 @@ Board.prototype.updateBoard = function(board) {
          }
       }
    }
+
+   this.dropGroup = null;
+   this.dropGroupLocation = null;
 
    requestBoardRender(this.id);
 };

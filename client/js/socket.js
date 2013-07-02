@@ -41,7 +41,8 @@ Socket.prototype.onMessage = function(messageEvent) {
          break;
       case Message.TYPE_UPDATE:
          updateOpponent(message.Payload.OpponentPunishment,
-                        message.Payload.OpponentBoard);
+                        message.Payload.OpponentBoard,
+                        new DropGroup(message.Payload.OpponentNextDropGroup));
 
          if (message.Payload.Win) {
             winGame();
@@ -49,6 +50,9 @@ Socket.prototype.onMessage = function(messageEvent) {
          break;
       case Message.TYPE_NO_CONTEST:
          noContest();
+         break;
+      case Message.TYPE_DROP_GROUP_UPDATE:
+         opponentDropGroupUpdate(message.Payload.Locations);
          break;
       default:
          // Note: There are messages that are known, but just not expected from the server.
@@ -88,10 +92,14 @@ Socket.prototype.onError = function(messageEvent) {
    debug(JSON.stringify(messageEvent));
 };
 
+Socket.prototype.close = function() {
+   this.ws.close();
+};
+
 Socket.prototype.sendMove = function(dropGemLocations, boardHash) {
    this.ws.send(createMoveMessage(dropGemLocations, boardHash));
 };
 
-Socket.prototype.close = function() {
-   this.ws.close();
+Socket.prototype.sendDropGroupUpdate = function(dropGemLocations) {
+   this.ws.send(createDropGroupUpdateMessage(dropGemLocations));
 };

@@ -274,6 +274,11 @@ func (this *Board) inBounds(row int, col int) bool {
           col >= 0 && col < this.Width;
 }
 
+func (this *Board) AvailableSpot(row int, col int) bool {
+   return this.inBounds(row, col) &&
+          this.Board[row][col] == nil;
+}
+
 // TODO(eriq): Verify that each of these operations are proper.
 func (this *Board) moveGem(fromRow int, fromCol int, toRow int, toCol int) bool {
    var boardGem = this.clearGem(fromRow, fromCol);

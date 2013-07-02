@@ -91,19 +91,32 @@ Star.prototype.hash = function() {
    return Gem.prototype.hash.call(this) + '-star';
 };
 
-function DropGroup(marshaledGroup) {
+function DropGroup(marshaledGroup, empty) {
    if (marshaledGroup) {
       this.firstGem = constructGem(marshaledGroup[0]);
       this.secondGem = constructGem(marshaledGroup[1]);
+   } else if (empty) {
+      this.firstGem = null;
+      this.secondGem = null;
    } else {
       debug('Attempting to create a drop group from nothing.');
-      this.firstGem = nextGem();
-      this.secondGem = nextGem();
+      this.firstGem = nextGemForTesting();
+      this.secondGem = nextGemForTesting();
    }
 
    // Orientation is always from first to second.
    this.orientation = DropGroup.ORIENTATION_DOWN;
 }
+
+DropGroup.prototype.clone = function() {
+   var rtn = new DropGroup(null, true);
+
+   rtn.firstGem = this.firstGem;
+   rtn.secondGem = this.secondGem;
+   rtn.orientation = this.orientation;
+
+   return rtn;
+};
 
 function constructGem(marshaledGem) {
    switch (marshaledGem.Type) {

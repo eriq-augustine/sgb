@@ -291,9 +291,6 @@ InternalRenderer.prototype.renderDestroyGem = function(boardId, row, col, color)
 // The final callback in a gem animation.
 // Will complete the render.
 InternalRenderer.prototype.completeDestructionAnimation = function(cellId, expired) {
-   //TEST
-   console.log('callback');
-
    this.removeRenderClasses($('#' + cellId));
 
    this.activeDestructions--;
