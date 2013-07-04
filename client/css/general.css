@@ -1,0 +1,29 @@
+.page {
+   background: pink;
+}
+
+.page-center {
+   width: 1000px;
+   margin-left: auto;
+   margin-right: auto;
+}
+
+.content {
+   background: green;
+}
+
+.header {
+   background: grey;
+}
+
+.main-content {
+   background: red;
+}
+
+.nav {
+   background: yellow;
+}
+
+.footer {
+   background: black;
+}

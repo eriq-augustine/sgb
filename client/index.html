@@ -1,6 +1,7 @@
 <html>
    <head>
       <title>SPF</title>
+      <link rel="stylesheet" type="text/css" media="all" href="css/general.css">
       <link rel="stylesheet" type="text/css" media="all" href="css/board.css">
       <link rel="stylesheet" type="text/css" media="all" href="css/gem.css">
 
@@ -17,17 +18,29 @@
       <script type="text/javascript" src="js/game.js"></script>
    </head>
    <body>
-      <div class='boards'>
-         <div class='board-message'></div>
-         <div class='board'>
-            <h1>Player Board</h1>
-            <div id='js-player-board' class='board'></div>
-         </div>
+      <div class='page'>
+         <div class='content page-center'>
+            <div class='header'></div>
+            <div class='main-content'>
+               <div class='nav'></div>
+               <div class='stage-area'>
+                  <div class='boards'>
+                     <div class='board-message'></div>
+                     <div class='board'>
+                        <h1>Player Board</h1>
+                        <div id='js-player-board' class='board'></div>
+                     </div>
 
-         <div class='board'>
-            <h1>Opponent Board</h1>
-            <div id='js-opponent-board' class='board'></div>
+                     <div class='board'>
+                        <h1>Opponent Board</h1>
+                        <div id='js-opponent-board' class='board'></div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div class='footer'></div>
          </div>
       </div>
    </body>
 </html>
+
