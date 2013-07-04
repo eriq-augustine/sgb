@@ -22,7 +22,7 @@ var activeGames = make(map[int]*game.Game);
 // TODO(eriq): queue
 var waitingPlayer int = -1;
 
-func GameServer(ws *websocket.Conn) {
+func GameSocket(ws *websocket.Conn) {
    connectionId++;
    var id = connectionId;
    connections[id] = ws;
@@ -60,7 +60,7 @@ func GameServer(ws *websocket.Conn) {
                activeGames[waitingPlayer] = newGame;
 
                waitingPlayer = -1;
-               BroadcastStart(newGame);
+               broadcastStart(newGame);
             }
          case message.MoveMessagePart:
             var movePart, _ = messagePart.(message.MoveMessagePart);
@@ -141,7 +141,7 @@ func closeGame(playerId int) {
    delete(activeGames, opponentId);
 }
 
-func BroadcastStart(currentGame *game.Game) {
+func broadcastStart(currentGame *game.Game) {
    // Initial drop will be the same for both players.
    var message = message.NewMessage(message.MESSAGE_TYPE_START,
                                     message.StartMessagePart{currentGame.InitialDrops()});
@@ -178,7 +178,7 @@ func signalNextTurn(playerId int, dropGroup *[2]gem.Gem, punishments *[][]*gem.G
                                                    playerLost}));
 }
 
-func BroadcastNoContest(currentGame *game.Game) {
+func broadcastNoContest(currentGame *game.Game) {
    var message = message.NewMessage(message.MESSAGE_TYPE_NO_CONTEST,
                                     message.NoContestMessagePart{});
 
