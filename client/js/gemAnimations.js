@@ -38,7 +38,7 @@ function getNormalDestructionFrames(color) {
    var frames = [];
 
    for (var i = 0; i < NUM_DESTRUCTION_FRAMES; i++) {
-      frames.push(new AnimationFrame('animation-gem-destroy-' + color + '-' + i,
+      frames.push(new AnimationFrame('animation-gem-normal-destroy-' + color + '-' + i,
                                      NORMAL_DESTRUCTION_ANIMATION_LENGTH,
                                      true /* expire */));
    }
@@ -50,7 +50,7 @@ function getDestroyerDestructionFrames(color) {
    var frames = [];
 
    for (var i = 0; i < NUM_DESTRUCTION_FRAMES; i++) {
-      frames.push(new AnimationFrame('animation-destroyer-destroy-' + color + '-' + i,
+      frames.push(new AnimationFrame('animation-gem-destroyer-destroy-' + color + '-' + i,
                                      NORMAL_DESTRUCTION_ANIMATION_LENGTH,
                                      true /* expire */));
    }
@@ -62,7 +62,7 @@ function getStarDestructionFrames() {
    var frames = [];
 
    for (var i = 0; i < NUM_DESTRUCTION_FRAMES; i++) {
-      frames.push(new AnimationFrame('animation-star-destroy-' + i,
+      frames.push(new AnimationFrame('animation-gem-star-destroy-' + i,
                                      NORMAL_DESTRUCTION_ANIMATION_LENGTH,
                                      true /* expire */));
    }

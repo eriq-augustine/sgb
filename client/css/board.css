@@ -79,9 +79,6 @@
 }
 
 .board-cell {
-   width: 20px;
-   height: 20px;
-
    display: inline-block;
 }
 
@@ -93,8 +90,4 @@
 }
 
 .next-group {
-   width: 20px;
-   height: 20px;
-   background-image: url('../images/gems.png');
-   background-position: 0px -80px;
 }
