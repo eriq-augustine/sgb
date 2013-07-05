@@ -13,41 +13,53 @@ dl, dt, dd, ol, ul, li, fieldset, form, label, legend {
    border: 0;
 }
 
-body {
-   background: lightblue;
+h1 {
+   font-size: 36px;
+}
+
+h2 {
 }
 
 .page {
    width: 100%;
    height: 100%;
    padding-top: 25px;
-   background: pink;
+   background: #AAA;
 }
 
 .page-center {
    width: 1000px;
    margin-left: auto;
    margin-right: auto;
-
-   background: purple;
 }
 
 .content {
-   background: green;
-
    min-height: 300px;
 }
 
 .header {
-   height: 100px;
+   padding-bottom: 10px;
+}
 
-   background: grey;
+.title {
+   text-align: center;
+   width: 300px;
+   margin-left: auto;
+   margin-right: auto;
+   background: black;
+   color: white;
+   padding: 10px;
+   border-radius: 10px;
+   box-shadow: 5px 5px 2px #888;
+   margin-left: auto;
+   margin-right: auto;
 }
 
 .main-content {
    background: red;
 
    overflow: hidden;
+   border-radius: 15px;
 }
 
 .nav {
@@ -73,11 +85,8 @@ body {
    padding-bottom: 20px;
    border-radius: 15px;
    box-shadow: inset 2px 2px 5px black;
-
-   background: brown;
+   background: lightblue;
 }
 
 .footer {
-   background: black;
-   min-height: 100px;
 }
