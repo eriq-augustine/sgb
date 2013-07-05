@@ -103,6 +103,7 @@ func GameSocket(ws *websocket.Conn) {
       }
    }
 
+   // TODO(eriq): If in queue, remove self.
    closeGame(id);
 
    println("On Close");
