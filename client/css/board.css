@@ -1,9 +1,12 @@
-html {
-   background: lightblue;
-}
-
 .boards {
    position: relative;
+}
+
+.player-board {
+}
+
+.opponent-board {
+   float: right;
 }
 
 .board-message {
