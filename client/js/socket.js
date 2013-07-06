@@ -1,6 +1,5 @@
 "use strict";
 
-// TODO(eriq): Real name
 // Socket.SERVER = 'ws://www.eriqaugustine.com/gamesocket';
 Socket.SERVER = 'ws://66.169.236.4:3030/gamesocket';
 // Socket.SERVER = 'ws://localhost:12345/testsocket';

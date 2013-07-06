@@ -18,7 +18,6 @@ function getBoard(id) {
    return undefined;
 }
 
-// TODO(eriq): Delete board on destruction.
 function removeBoard(id) {
    if (spfGet('_boardLookup_')) {
       delete spfGet('_boardLookup_')[id];
@@ -154,7 +153,7 @@ Board.prototype.moveDropGroup = function(rowDelta, colDelta) {
    if (!this.canMoveDropGroup(rowDelta, colDelta)) {
       return false;
    }
-  
+
    var dropGems = this.getDropGemLocations();
    return this.placeDropGroup(dropGems.first.row + rowDelta, dropGems.first.col + colDelta,
                               dropGems.second.row + rowDelta, dropGems.second.col + colDelta);
@@ -178,7 +177,6 @@ Board.prototype.placeDropGroup = function(firstRow, firstCol, secondRow, secondC
 };
 
 // For opponent boards only.
-// TODO(eriq): Make a formal (inheritance) difference between player and opponent boards.
 Board.prototype.modifyOpponentDropGroup = function(firstRow, firstCol, secondRow, secondCol) {
    this.placeDropGroup(firstRow, firstCol, secondRow, secondCol);
 
@@ -214,7 +212,6 @@ Board.prototype.canMoveDropGroup = function(rowDelta, colDelta) {
    }
 
    if (Math.abs(rowDelta) > 1 || Math.abs(colDelta) > 1) {
-      // TODO(eriq): Possibly reconsider for a fast drop.
       error('Cannot move more than one at a time.');
       return false;
    }
@@ -268,7 +265,6 @@ Board.prototype.validMoveLocation = function(row, col) {
    return this.getGem(row, col) === null;
 };
 
-// TODO(eriq): Get direction and pivot from preferences.
 Board.prototype.changeDropOrientation = function() {
    if (this.dropGroup) {
       this.changeDropOrientationImpl(true, DropGroup.PIVOT_FIRST);
@@ -682,7 +678,6 @@ Board.prototype.clearGem = function(row, col, destroy) {
    this._board_[row][col] = null;
 
    if (destroy) {
-      // TODO(eriq): Make animations for the other types.
       requestDestroy(this.id, row, col, tempGem.type, tempGem.color);
    } else {
       requestCellRender(this.id, row, col);

@@ -61,7 +61,6 @@ AnimationMachine.prototype.maybeAnimate = function() {
 
    // Move through all buckets between |this.currentBucket| and |endBucket| (inclusivley).
    var absoluteBucketDelta = Math.floor(delta / AnimationMachine.BUCKET_SIZE);
-   // TODO(eriq): What happens when all buckets need to be iterated?
    //  Buckets will get cut off.
    var endBucket = (this.currentBucket + absoluteBucketDelta) % AnimationMachine.NUM_BUCKETS;
 
@@ -91,7 +90,6 @@ AnimationMachine.prototype.maybeAnimate = function() {
    }
 };
 
-// TODO(eriq): Is it faster to hold the element, or pass the id?
 function Animation(objectId, frames, repeat) {
    this.objectId = objectId;
    this.frames = frames || [];

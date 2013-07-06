@@ -54,7 +54,6 @@ function spfRemove(key) {
 }
 
 // Static access to the game.
-// TODO(eriq): namespace EVERYTHING!
 function initGame(gameStartCallback) {
    spfSet('debug', true);
    spfSet('_game_', new Game(gameStartCallback));
@@ -345,8 +344,6 @@ Game.prototype.updateOpponent = function(punishments, board, nextDrop) {
    }
 };
 
-// TODO(eriq): Don't register handlers till game actually starts.
-// TODO(eriq): Get keys from settings.
 document.addEventListener('keydown', function(event) {
    switch(event.keyCode) {
       case 32:  // Space

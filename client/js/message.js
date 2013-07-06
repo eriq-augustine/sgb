@@ -1,6 +1,5 @@
 "use strict";
 
-// TODO(eriq): Namespace all the files.
 var Message = {};
 Message.TYPE_INIT = 0;
 Message.TYPE_START = 1;
