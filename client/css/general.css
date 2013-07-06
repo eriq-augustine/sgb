@@ -104,6 +104,7 @@ body {
    border: initial;
    border-radius: 10px;
    box-shadow: 2px 2px 5px #888;
+   cursor: pointer;
 }
 
 .quickplay-button:hover {

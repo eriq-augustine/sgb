@@ -160,6 +160,7 @@ func signalNextTurn(playerId int, dropGroup *[2]gem.Gem, punishments *[][]*gem.G
    var playerBoard = currentGame.Boards[currentGame.GetPlayerOrdinal(playerId)];
 
    // Tell the player the next turn info
+   // TODO(eriq): Punishments seems a bit off: investigate.
    var playerMessage =
       message.NewMessage(message.MESSAGE_TYPE_NEXT_TURN,
                          message.NextTurnMessagePart{*dropGroup,

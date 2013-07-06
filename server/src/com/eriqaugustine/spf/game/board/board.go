@@ -61,6 +61,14 @@ func (this *Board) Punish(punishments int) (*[][]*gem.Gem, bool) {
       var baselines *[]int = gem.GetBaselines(&this.Board);
       for col, gems := range punishmentGems {
          for rowOffset, punishmentGem := range gems {
+            //TEST
+            println("-------");
+            println(col);
+            println((*baselines)[col]);
+            println(rowOffset);
+            println(this.Board[(*baselines)[col] - rowOffset][col]);
+            println("+++++++");
+
             this.Board[(*baselines)[col] - rowOffset][col] = punishmentGem;
          }
       }
