@@ -51,14 +51,15 @@ func GetPunishmentGems(punishments int,
 // Get the number of punishments for each column.
 // The second return is false if the player loses.
 func getColCounts(punishments int, board *[][]*Gem) (*[]int, bool) {
+   // Number of gems to be placed in each column.
    var colCounts []int = make([]int, len((*board)[0]));
    var baselines *[]int = GetBaselines(board);
    var availableCols *[]int = getAvailableCols(board, baselines, &colCounts);
 
    // First allocate full rows.
    for punishments >= len(*availableCols) && len(*availableCols) > 0 {
-      for i := 0; i < len(*availableCols); i++ {
-         colCounts[i]++;
+      for _, col := range *availableCols {
+         colCounts[col]++;
          punishments--;
       }
 
@@ -84,13 +85,15 @@ func getColCounts(punishments int, board *[][]*Gem) (*[]int, bool) {
    return &colCounts, true;
 };
 
-// The first open slot in each column.
+// The first open slot in each column, -1 if there is no empty slot.
 func GetBaselines(board *[][]*Gem) *[]int {
    var baselines []int = make([]int, 0);
    for col := 0; col < len((*board)[0]); col++ {
+      baselines = append(baselines, -1);
+
       for row := len(*board) - 1; row >= 0; row-- {
          if (*board)[row][col] == nil {
-            baselines = append(baselines, row);
+            baselines[col] = row;
             break;
          }
       }
