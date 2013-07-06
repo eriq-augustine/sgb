@@ -233,7 +233,8 @@ func (this *Board) getConnectedByColor(start location) *[]location {
          if this.inBounds(row, col) &&
             !locationSet[location{row, col}] &&
             this.Board[row][col] != nil &&
-            this.Board[row][col].Color == startColor {
+            this.Board[row][col].Color == startColor &&
+            this.Board[row][col].Type != gem.TYPE_LOCKED {
                searchStack = append(searchStack, location{row, col});
                locationSet[location{row, col}] = true;
          }

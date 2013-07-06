@@ -501,7 +501,7 @@ Board.prototype.getConnectedByColor = function(sourceRow, sourceCol) {
 
          if (this.inBounds(row, col) && !(((row * this.width) + col) in gems)) {
             var gem = this.getGem(row, col);
-            if (gem && gem.color === sourceGem.color) {
+            if (gem && gem.color === sourceGem.color && gem.type != Gem.TYPE_LOCKED) {
                searchStack.push({row: row, col: col});
                gems[(row * this.width) + col] = {gem: gem, row: row, col: col};
             }
