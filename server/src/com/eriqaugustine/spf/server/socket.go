@@ -4,6 +4,7 @@ import (
    "encoding/json"
    "fmt"
    "net"
+   "io"
    "code.google.com/p/go.net/websocket"
    "com/eriqaugustine/spf/game"
    "com/eriqaugustine/spf/game/gem"
@@ -28,21 +29,20 @@ func GameSocket(ws *websocket.Conn) {
 
    var msg message.Message;
 
-   println("On Connect");
-
    SocketLifeLoop:
    for {
       var err = websocket.JSON.Receive(ws, &msg);
       if err != nil {
          switch err.(type) {
             case *json.SyntaxError:
-               println("unmarshal error!");
-               websocket.Message.Send(ws, "unmarshal error");
                continue;
             case *net.OpError:
                break SocketLifeLoop;
             default:
-               fmt.Printf("ERROR: %s\n", err.Error());
+               // EOFs are ok, client just closed.
+               if (err != io.EOF) {
+                  fmt.Printf("ERROR: %s\n", err.Error());
+               }
                break SocketLifeLoop;
          }
       }
@@ -93,10 +93,12 @@ func GameSocket(ws *websocket.Conn) {
       }
    }
 
-   // TODO(eriq): If in queue, remove self.
-   closeGame(id);
+   // If this player i waiting (in the queue), remove them.
+   if (waitingPlayer == id) {
+      waitingPlayer = -1;
+   }
 
-   println("On Close");
+   closeGame(id);
 }
 
 func sendDropGroupUpdate(playerId int, messagePart message.DropGroupUpdateMessagePart) {
@@ -108,28 +110,26 @@ func sendDropGroupUpdate(playerId int, messagePart message.DropGroupUpdateMessag
 
 func closeGame(playerId int) {
    var currentGame, exists = activeGames[playerId];
-   if !exists {
-      // Already destroyed this game.
-      return;
-   }
+   if exists {
+      var opponentId = currentGame.GetOpponentId(playerId);
 
-   var opponentId = currentGame.GetOpponentId(playerId);
+      conn, exists := connections[opponentId];
+      if exists {
+         conn.Close();
+      }
+
+      delete(activeGames, playerId);
+      delete(activeGames, opponentId);
+
+      delete(connections, opponentId);
+   }
 
    conn, exists := connections[playerId];
    if exists {
       conn.Close();
    }
 
-   conn, exists = connections[opponentId];
-   if exists {
-      conn.Close();
-   }
-
    delete(connections, playerId);
-   delete(connections, opponentId);
-
-   delete(activeGames, playerId);
-   delete(activeGames, opponentId);
 }
 
 func broadcastStart(currentGame *game.Game) {
