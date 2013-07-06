@@ -120,7 +120,6 @@ func (this *Game) MoveUpdate(playerId int, locations [2][2]int, hash string) (*[
    this.Boards[playerOrdinal].PlaceGem(&dropGroup[1], locations[1][0], locations[1][1]);
 
    if hash != this.Boards[playerOrdinal].Hash() {
-      // TODO(eriq): Real logging
       panic("Board hashes differ!");
    }
 
@@ -140,7 +139,6 @@ func (this *Game) advanceBoard(playerOrdinal int) (*[][]*gem.Gem, bool) {
 
    var destroyed int = this.Boards[playerOrdinal].Stabalize();
 
-   // TODO(eriq): Take combos into consideration.
    var punishments int = this.adjustPunishments(playerOrdinal, destroyed);
 
    punishmentGems, success := this.Boards[playerOrdinal].Punish(punishments);

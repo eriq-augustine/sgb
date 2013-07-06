@@ -149,7 +149,6 @@ func (this *Board) fall() bool {
    return dropped;
 }
 
-// TODO(eriq): Locked gems are being destroyed by destroyers.
 // Return the number of gems that were destroyed.
 func (this *Board) destroy() int {
    // Keep a map (not list (dupes)) of gems to be destroyed
@@ -280,7 +279,6 @@ func (this *Board) AvailableSpot(row int, col int) bool {
           this.Board[row][col] == nil;
 }
 
-// TODO(eriq): Verify that each of these operations are proper.
 func (this *Board) moveGem(fromRow int, fromCol int, toRow int, toCol int) bool {
    var boardGem = this.clearGem(fromRow, fromCol);
    return this.PlaceGem(boardGem, toRow, toCol);

@@ -62,7 +62,6 @@ func NewMessage(messageType int, messagePart interface{}) *Message {
    var jsonPart, err = json.Marshal(messagePart);
 
    if (err != nil) {
-      // TODO(eriq): Real logging
       println("Error marshaling start message part.");
       return nil;
    }

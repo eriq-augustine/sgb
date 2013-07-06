@@ -5,11 +5,8 @@ import (
    "math/rand"
 );
 
-// TODO(eriq): Different characters and combos.
-
 var random = rand.New(rand.NewSource(time.Now().UnixNano()));
 
-// TODO(eriq)
 var DebugDropPattern DropPattern = DropPattern{[][]int{
    []int{COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED},
    []int{COLOR_YELLOW, COLOR_YELLOW, COLOR_YELLOW, COLOR_YELLOW, COLOR_YELLOW, COLOR_YELLOW},

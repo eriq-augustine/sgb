@@ -19,7 +19,6 @@ var connections = make(map[int]*websocket.Conn);
 // Note: there are two entries per game (one per player).
 var activeGames = make(map[int]*game.Game);
 
-// TODO(eriq): queue
 var waitingPlayer int = -1;
 
 func GameSocket(ws *websocket.Conn) {
@@ -65,10 +64,6 @@ func GameSocket(ws *websocket.Conn) {
          case message.MoveMessagePart:
             var movePart, _ = messagePart.(message.MoveMessagePart);
 
-            // TEST
-            println("Move");
-
-            // TODO(eriq): This panics on no contest.
             var dropGroup, punishments, success =
                activeGames[id].MoveUpdate(id, movePart.Locations,
                                           movePart.BoardHash);
@@ -76,13 +71,9 @@ func GameSocket(ws *websocket.Conn) {
             signalNextTurn(id, dropGroup, punishments, !success);
 
             if !success {
-               // TODO(eriq): Close the connections now.
                break SocketLifeLoop;
             }
          case message.DropGroupUpdateMessagePart:
-            //TEST
-            fmt.Println("%+v", messagePart);
-
             var dropGroupUpdatePart, _ = messagePart.(message.DropGroupUpdateMessagePart);
 
             // Verify that the given location is valid.
@@ -91,7 +82,6 @@ func GameSocket(ws *websocket.Conn) {
                                               dropGroupUpdatePart.Locations[0][1]) ||
                !activeGames[id].AvailableSpot(id, dropGroupUpdatePart.Locations[1][0],
                                               dropGroupUpdatePart.Locations[1][1]) {
-               // TODO(eriq): Log
                fmt.Println("Bad Drop Group Update: %+v", dropGroupUpdatePart.Locations);
                continue;
             }
@@ -160,7 +150,6 @@ func signalNextTurn(playerId int, dropGroup *[2]gem.Gem, punishments *[][]*gem.G
    var playerBoard = currentGame.Boards[currentGame.GetPlayerOrdinal(playerId)];
 
    // Tell the player the next turn info
-   // TODO(eriq): Punishments seems a bit off: investigate.
    var playerMessage =
       message.NewMessage(message.MESSAGE_TYPE_NEXT_TURN,
                          message.NextTurnMessagePart{*dropGroup,
