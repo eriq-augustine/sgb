@@ -12,11 +12,12 @@
 .board-message {
    position: absolute;
    z-index: 5;
-   top: 30%;
-   left: 10%;
+   top: 25%;
    font-size: 128px;
    font-weight: bold;
    opacity: 0.80;
+   width: 100%;
+   text-align: center;
 }
 
 .board-message-win {

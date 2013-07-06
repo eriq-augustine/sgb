@@ -18,6 +18,7 @@ h1 {
 }
 
 h2 {
+   font-size: 24px;
 }
 
 body {
@@ -57,10 +58,6 @@ body {
 }
 
 .main-content {
-   background: red;
-
-   overflow: hidden;
-   border-radius: 15px;
 }
 
 .nav {
@@ -72,9 +69,11 @@ body {
 }
 
 .stage-area {
-   display: inline-block;
    width: 850px;
-   vertical-align: top;
+   margin-left: auto;
+   margin-right: auto;
+   overflow: hidden;
+   border-radius: 15px;
 
    background: blue;
 }
@@ -90,4 +89,51 @@ body {
 }
 
 .footer {
+}
+
+.quickplay-button {
+   width: 200px;
+   height: 50px;
+   margin-top: 80px;
+   margin-left: auto;
+   margin-right: auto;
+   display: block;
+   color: white;
+   font-size: 24px;
+   background: #252525;
+   border: initial;
+   border-radius: 10px;
+   box-shadow: 2px 2px 5px #888;
+}
+
+.quickplay-button:hover {
+   background: #202020;
+}
+
+.quickplay-button:active {
+   background: white;
+   color: black;
+}
+
+.waiting {
+   position: relative;
+   margin-top: 75px;
+}
+
+.waiting h2 {
+   text-align: center;
+}
+
+.loading {
+   background: url('../images/loading.gif');
+   width: 31px;
+   height: 31px;
+   position: absolute;
+   left: 49%;
+}
+
+/** Util styles **/
+
+.no-display {
+   display: none;
 }

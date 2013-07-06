@@ -54,6 +54,12 @@ function spfRemove(key) {
 }
 
 // Static access to the game.
+// TODO(eriq): namespace EVERYTHING!
+function initGame(gameStartCallback) {
+   spfSet('debug', true);
+   spfSet('_game_', new Game(gameStartCallback));
+}
+
 function dropComplete(dropGemLocations, hash) {
    spfGet('_game_').controlledDropComplete(dropGemLocations, hash);
 }
@@ -92,7 +98,7 @@ function opponentDropGroupUpdate(dropGemLocations) {
    spfGet('_game_').opponentDropGroupUpdate(dropGemLocations);
 }
 
-function Game() {
+function Game(gameStartCallback) {
    this.logicWorker = new Worker("js/logicTimer.js");
    this.logicWorker.onmessage = function(evt) {
       spfGet('_game_').gameTick();
@@ -100,6 +106,9 @@ function Game() {
 
    this.state = Game.STATE_INIT;
    this.lastDrop = 0;
+
+   // Call this when the game is ready to start.
+   this.gameStartCallback = gameStartCallback;
 
    // Keep track of the drops in waiting.
    // The board is only allowed to know about the current and next drop.
@@ -261,6 +270,10 @@ Game.prototype.gameTick = function() {
 };
 
 Game.prototype.start = function(dropGroups) {
+   if (this.gameStartCallback) {
+      this.gameStartCallback();
+   }
+
    this.playerBoard = new Board('js-player-board', Game.BOARD_HEIGHT,
                                  Game.BOARD_WIDTH, dropGroups[0]);
    this.opponentBoard = new Board('js-opponent-board', Game.BOARD_HEIGHT,
@@ -331,11 +344,6 @@ Game.prototype.updateOpponent = function(punishments, board, nextDrop) {
       this.opponentBoard.releaseGem(nextDrop);
    }
 };
-
-document.addEventListener('DOMContentLoaded', function() {
-   spfSet('debug', true);
-   spfSet('_game_', new Game());
-});
 
 // TODO(eriq): Don't register handlers till game actually starts.
 // TODO(eriq): Get keys from settings.
