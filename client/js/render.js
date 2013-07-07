@@ -109,7 +109,7 @@ function requestPunishmentRender(boardId) {
 function requestCancelDestruction(boardId) {
    // TODO(eriq): Is this threadsafe?
    if (spfGet('_renderer_')) {
-      spfGet('_renderer_').cancelDestructions();
+      spfGet('_renderer_').cancelDestructions(boardId);
    }
 }
 
