@@ -28,13 +28,13 @@ Socket.prototype.onMessage = function(messageEvent) {
                     new DropGroup(message.Payload.Drops[1])]);
          break;
       case Message.TYPE_NEXT_TURN:
-         nextTurnInfo(new DropGroup(message.Payload.Drop),
-                      message.Payload.PlayerPunishment,
-                      message.Payload.OpponentPunishment);
-
          if (message.Payload.Lose) {
             loseGame();
          }
+
+         nextTurnInfo(new DropGroup(message.Payload.Drop),
+                      message.Payload.PlayerPunishment,
+                      message.Payload.OpponentPunishment);
          break;
       case Message.TYPE_UPDATE:
          var nextDrop = message.Payload.Win ? null : new DropGroup(message.Payload.OpponentNextDropGroup);
@@ -63,7 +63,7 @@ Socket.prototype.onMessage = function(messageEvent) {
 
 Socket.prototype.onClose = function(messageEvent) {
    debug("Connection to server closed.");
-   noContest();
+   connectionClosed();
 };
 
 Socket.prototype.onOpen = function(messageEvent) {

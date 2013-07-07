@@ -16,8 +16,6 @@ Game.STATE_START = 1;
 Game.STATE_PAUSE = 2;
 Game.STATE_CONTROLLED_DROP = 3;
 Game.STATE_UNCONTROLLED_DROP = 4;
-// The DESTROY state is just a transition between when some gems are destroyed,
-//  and when the next unsupported drop will attempt.
 Game.STATE_TRY_DESTROY = 5;
 Game.STATE_PUNISHMENT = 6;
 Game.STATE_NEXT_GEM = 7;
@@ -25,7 +23,7 @@ Game.STATE_DONE = 8;
 Game.STATE_LOSE = 9;
 Game.STATE_WIN = 10;
 Game.STATE_NO_CONTEST = 11;
-Game.NUM_STATES = 11;
+Game.NUM_STATES = 12;
 
 // Provide controled access to spf variables.
 function spfGet(key) {
@@ -102,6 +100,10 @@ function opponentDropGroupUpdate(dropGemLocations) {
    spfGet('_game_').opponentDropGroupUpdate(dropGemLocations);
 }
 
+function connectionClosed() {
+   spfGet('_game_').connectionClosed();
+}
+
 function Game(gameStartCallback) {
    this.logicWorker = new Worker("js/logicTimer.js");
    this.logicWorker.onmessage = function(evt) {
@@ -129,6 +131,9 @@ function Game(gameStartCallback) {
    this.opponentBoard = null;
 
    this.frozenPunishments = null;
+
+   // When this turns true, the game should end.
+   this.lost = false;
 }
 
 Game.prototype.opponentDropGroupUpdate = function(dropGemLocations) {
@@ -251,9 +256,15 @@ Game.prototype.gameTick = function() {
             keepGoing |= this.playerBoard.dropPunishmentRow(this.frozenPunishments);
 
             if (!keepGoing) {
-               // Done with punishments.
-               this.frozenPunishments = null;
-               this.state = Game.STATE_NEXT_GEM;
+               // This is where a player is told they lost.
+               // Do it here so that the player can see their potential punishments.
+               if (this.lost) {
+                  this.finalizeLoss();
+               } else {
+                  // Done with punishments.
+                  this.frozenPunishments = null;
+                  this.state = Game.STATE_NEXT_GEM;
+               }
             }
          }
          break;
@@ -308,6 +319,10 @@ Game.prototype.stop = function() {
 };
 
 Game.prototype.lose = function() {
+   this.lost = true;
+};
+
+Game.prototype.finalizeLoss = function() {
    $('.board-message').text('You Lose').addClass('board-message-lose');
    console.log('You Lose!');
 
@@ -330,6 +345,13 @@ Game.prototype.noContest = function() {
 
       this.stop();
       this.state = Game.STATE_NO_CONTEST;
+   }
+};
+
+Game.prototype.connectionClosed = function() {
+   // If we lost, then finish the dropping first.
+   if (!this.lost) {
+      this.noContest();
    }
 };
 
