@@ -3,6 +3,7 @@ package gem;
 import (
    "time"
    "math/rand"
+   "com/eriqaugustine/spf/game/constants"
 );
 
 var random = rand.New(rand.NewSource(time.Now().UnixNano()));
@@ -99,13 +100,23 @@ func GetBaselines(board *[][]*Gem) *[]int {
    return &baselines;
 }
 
+// Note: The drop positions will be given ONLY if all other columns are filled.
 func getAvailableCols(board *[][]*Gem, baselines *[]int, colCounts *[]int) *[]int {
    // Get available (non-full) columns.
    var availableCols []int = make([]int, 0);
-   for i := 0; i < len((*board)[0]); i++ {
-      if (*baselines)[i] - (*colCounts)[i] >= 0 {
-         availableCols = append(availableCols, i);
+   for col := 0; col < len((*board)[0]); col++ {
+
+      // Try to leave the first two rows open in the drop column.
+      if ((*baselines)[col] - (*colCounts)[col] >= 0) &&
+         !(col == constants.DROP_COLUMN && (*baselines)[col] - (*colCounts)[col] <= 1) {
+         availableCols = append(availableCols, col);
       }
+   }
+
+   // If there were no available columns, then try the drop column.
+   if (len(availableCols) == 0 &&
+       (*baselines)[constants.DROP_COLUMN] - (*colCounts)[constants.DROP_COLUMN] >= 0) {
+      availableCols = append(availableCols, constants.DROP_COLUMN);
    }
 
    return &availableCols;

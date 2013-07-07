@@ -5,9 +5,8 @@ import (
    "fmt"
    "crypto/md5"
    "com/eriqaugustine/spf/game/gem"
+   "com/eriqaugustine/spf/game/constants"
 );
-
-const DROP_COLUMN = 3;
 
 type Board struct {
    Height int;
@@ -71,7 +70,7 @@ func (this *Board) Punish(punishments int) (*[][]*gem.Gem, bool) {
 
 // Return true if a drop can happen on the boad.
 func (this *Board) CanDrop() bool {
-   return this.Board[0][DROP_COLUMN] == nil && this.Board[1][DROP_COLUMN] == nil;
+   return this.Board[0][constants.DROP_COLUMN] == nil && this.Board[1][constants.DROP_COLUMN] == nil;
 }
 
 func (this *Board) Hash() string {
