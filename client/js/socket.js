@@ -42,6 +42,7 @@ Socket.prototype.onMessage = function(messageEvent) {
          updateOpponent(message.Payload.OpponentPunishment,
                         message.Payload.OpponentBoard,
                         nextDrop);
+         updatePlayerPunishments(message.Payload.PlayerPunishment);
 
          if (message.Payload.Win) {
             winGame();

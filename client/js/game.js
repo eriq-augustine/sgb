@@ -85,6 +85,10 @@ function nextTurnInfo(dropGroup, playerPunishments, opponentPunishments) {
                                  opponentPunishments);
 }
 
+function updatePlayerPunishments(playerPunishmentCount) {
+   spfGet('_game_').updatePlayerPunishments(playerPunishmentCount);
+}
+
 function updateOpponent(punishments, board, dropGroup) {
    spfGet('_game_').updateOpponent(punishments, board, dropGroup);
 }
@@ -323,6 +327,10 @@ Game.prototype.noContest = function() {
    }
 };
 
+Game.prototype.updatePlayerPunishments = function(playerPunishmentCount) {
+   this.playerBoard.modifyPunishments(playerPunishmentCount);
+};
+
 Game.prototype.nextTurnInfo = function(dropGroup,
                                        playerPunishments,
                                        opponentPunishments) {
@@ -331,7 +339,7 @@ Game.prototype.nextTurnInfo = function(dropGroup,
    this.frozenPunishments = playerPunishments;
 
    // The player is taking all their punishments.
-   this.playerBoard.modifyPunishments(0);
+   this.updatePlayerPunishments(0);
    this.opponentBoard.modifyPunishments(opponentPunishments);
 };
 
