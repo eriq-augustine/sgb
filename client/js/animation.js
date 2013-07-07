@@ -25,14 +25,14 @@ AnimationMachine.prototype.start = function() {
    this.bucketStartTime = Date.now();
 };
 
-AnimationMachine.prototype.removeAnimation = function(animationId) {
+AnimationMachine.prototype.removeAnimation = function(animationId, cancelAllCallbacks) {
    var bucket = this.animationLookup[animationId].bucket;
-   this.animationLookup[animationId].animation.removeFrame();
+   this.animationLookup[animationId].animation.removeFrame(null, cancelAllCallbacks);
    delete this.animationLookup.animationId;
 
-   for (var i = 0; i < this.animationBuckets[bucket].length; i++) {
-      if (this.animationBuckets[bucket][i].id == animationId) {
-         this.animationBuckets[bucket].splice(i, 1);
+   for (var i = 0; i < this.buckets[bucket].length; i++) {
+      if (this.buckets[bucket][i].id == animationId) {
+         this.buckets[bucket].splice(i, 1);
          break;
       }
    }
@@ -99,13 +99,14 @@ function Animation(objectId, frames, repeat) {
 };
 
 // Remove the current animation frame from the target.
-Animation.prototype.removeFrame = function(element) {
+Animation.prototype.removeFrame = function(element, cancelAllCallbacks) {
    element = element || $('#' + this.objectId);
+   cancelAllCallbacks = cancelAllCallbacks || false;
 
    if (this.currentFrame != -1) {
       element.removeClass(this.frames[this.currentFrame].animationClass);
 
-      if (this.frames[this.currentFrame].postAnimationHook) {
+      if (this.frames[this.currentFrame].postAnimationHook && !cancelAllCallbacks) {
          this.frames[this.currentFrame].postAnimationHook.call(true);
       }
    }

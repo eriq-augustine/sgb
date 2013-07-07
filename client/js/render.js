@@ -104,19 +104,25 @@ function requestPunishmentRender(boardId) {
    }
 }
 
+// This is current not really a request.
+// All destruction animations are immediatley canceled.
+function requestCancelDestruction(boardId) {
+   // TODO(eriq): Is this threadsafe?
+   if (spfGet('_renderer_')) {
+      spfGet('_renderer_').cancelDestructions();
+   }
+}
+
 // The renderer class should never be accessed by anyone direclty.
 // The static calls should be used instead.
 function InternalRenderer() {
    this.render = true;
    this.updates = [];
 
-   // The number of destruction animations active.
-   // Then they zero, callback to the server.
-   this.activeDestructions = 0;
-
-   // Internal representations of the boards.
-   // Holds ids (and animation ids of all gems on the board).
-   this.boards = {};
+   // All the ids for the active destructions.
+   // Where there are no more, callback to the game.
+   this.activeDestructions = {};
+   this.activeDestructionsCount = 0;
 
    this.animationMachine = new AnimationMachine();
 }
@@ -144,6 +150,9 @@ InternalRenderer.prototype.update = function() {
          case 'punishments':
             this.renderPunishments(updateData.boardId);
             break;
+         case 'cancelDestructions':
+            this.cancelDestructions(updateData.boardId);
+            break;
          case 'destroyGem':
             this.renderDestroy(updateData.boardId,
                                updateData.row, updateData.col,
@@ -155,6 +164,9 @@ InternalRenderer.prototype.update = function() {
       }
    }
 
+   // It is very important that the logical requests be handled before the
+   //  animation machine runs.
+   // Especially a request to cancel animations before their callbacks get a chance to run.
    this.animationMachine.maybeAnimate();
 };
 
@@ -200,33 +212,11 @@ InternalRenderer.prototype.initBoard = function(boardId) {
 
    $('#' + boardId).html(html);
 
-   this.boards[boardId] = {animations: []};
-   for (var row = 0; row < board.height; row++) {
-      this.boards[boardId].animations.push([]);
-      for (var col = 0; col < board.width; col++) {
-         this.boards[boardId].animations[row].push(null);
-      }
-   }
-
    this.renderBoard(boardId);
-};
-
-InternalRenderer.prototype.stopAnimations = function(boardId) {
-   var animations = this.boards[boardId].animations;
-   for (var row = 0; row < animations.length; row++) {
-      for (var col = 0; col < animations[row].length; col++) {
-         if (animations[row][col] != null) {
-            this.animationsMachine.removeAnimation(animations[row][col]);
-         }
-      }
-   }
 };
 
 InternalRenderer.prototype.renderBoard = function(boardId) {
    var board = getBoard(boardId);
-
-   // Remove any active animations.
-   this.stopAnimations(boardId);
 
    for (var i = 0; i < board.height; i++) {
       for (var j = 0; j < board.width; j++) {
@@ -288,10 +278,10 @@ InternalRenderer.prototype.renderDestroy = function(boardId, row, col, type, col
    cell.addClass('renderer-gem');
 
    var callback = this.completeDestructionAnimation.bind(this, cellId);
+   var animationId = this.animationMachine.addAnimation(destructionAnimation(type, color, cellId, callback));
 
-   this.animationMachine.addAnimation(destructionAnimation(type, color, cellId, callback));
-
-   this.activeDestructions++;
+   this.activeDestructions[cellId] = animationId;
+   this.activeDestructionsCount++;
 };
 
 // The final callback in a gem animation.
@@ -299,10 +289,22 @@ InternalRenderer.prototype.renderDestroy = function(boardId, row, col, type, col
 InternalRenderer.prototype.completeDestructionAnimation = function(cellId, expired) {
    this.removeRenderClasses($('#' + cellId));
 
-   this.activeDestructions--;
-   if (this.activeDestructions == 0) {
+   delete this.activeDestructions[cellId];
+   this.activeDestructionsCount--;
+
+   if (this.activeDestructionsCount == 0) {
       destructionComplete();
    }
+};
+
+InternalRenderer.prototype.cancelDestructions = function() {
+   this.activeDestructionsCount = 0;
+
+   for (var cellId in this.activeDestructions) {
+      this.removeRenderClasses($('#' + cellId));
+      this.animationMachine.removeAnimation(this.activeDestructions[cellId], true);
+   }
+   this.activeDestructions = {};
 };
 
 InternalRenderer.prototype.renderNextDropGroup = function(boardId) {

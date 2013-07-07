@@ -5,6 +5,7 @@ Game.DROP_TIME = 750;
 Game.UNSUPPORTED_DROP_TIME = 200;
 Game.NEXT_GEM_WAIT_TIME = 100;
 Game.PUNISHMENT_WAIT_TIME = 10;
+Game.DESTRUCTION_TIMEOUT = 700;
 
 Game.BOARD_HEIGHT = 14;
 Game.BOARD_WIDTH = 6;
@@ -212,6 +213,11 @@ Game.prototype.gameTick = function() {
          }
          break;
       case Game.STATE_UNCONTROLLED_DROP:
+         if (this.activeDestruction && now - this.lastDrop >= Game.DESTRUCTION_TIMEOUT) {
+            this.activeDestruction = false;
+            requestCancelDestruction(this.playerBoard.id);
+         }
+
          if (!this.activeDestruction && now - this.lastDrop >= Game.UNSUPPORTED_DROP_TIME) {
             this.playerBoard.dropUnsupported();
             this.lastDrop = now;

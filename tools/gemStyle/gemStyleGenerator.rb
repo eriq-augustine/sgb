@@ -1,4 +1,5 @@
 # The format of the gem spritesheet is assumed to be as follows:
+#  <error gem>
 #  <normal red>, <red destruction>, ...
 #  <repeat for yellow, green, and blue>
 #  <destroyer red>, <red destroyer destruction>, ...
@@ -50,7 +51,8 @@ def printGemSet(name, shortName, gemOffset)
    end
 end
 
-printRule(".#{RENDER_PREFIX}-gem", ["background-image: url('../images/#{GEM_SPRITESHEET}')"])
+printRule(".#{RENDER_PREFIX}-gem", ["background-image: url('../images/#{GEM_SPRITESHEET}')",
+                                    "background-position: 0px 0px"])
 
 printRule('.board-cell',
           ["width: #{GEM_SIZE}px",
@@ -60,7 +62,8 @@ printRule('.next-group',
            "height: #{GEM_SIZE}px",
            "background-image: url('../images/#{GEM_SPRITESHEET}')"]);
 
-gemOffset = 0;
+# Offset starts at one because the error gem is in the first row.
+gemOffset = 1;
 
 printGemSet('Normal Gem', 'normal', gemOffset)
 gemOffset += GEM_COLORS
