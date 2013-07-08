@@ -53,9 +53,9 @@ function spfRemove(key) {
 }
 
 // Static access to the game.
-function initGame(gameStartCallback) {
+function initGame(chosenPattern, gameStartCallback) {
    spfSet('debug', true);
-   spfSet('_game_', new Game(gameStartCallback));
+   spfSet('_game_', new Game(chosenPattern, gameStartCallback));
 }
 
 function dropComplete(dropGemLocations, hash) {
@@ -104,7 +104,7 @@ function connectionClosed() {
    spfGet('_game_').connectionClosed();
 }
 
-function Game(gameStartCallback) {
+function Game(chosenPattern, gameStartCallback) {
    this.logicWorker = new Worker("js/logicTimer.js");
    this.logicWorker.onmessage = function(evt) {
       spfGet('_game_').gameTick();
@@ -125,7 +125,7 @@ function Game(gameStartCallback) {
    // True if there are destruction animations going on.
    this.activeDestruction = false;
 
-   this.socket = new Socket();
+   this.socket = new Socket(chosenPattern);
 
    this.playerBoard = null;
    this.opponentBoard = null;

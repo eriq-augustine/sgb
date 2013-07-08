@@ -1,3 +1,5 @@
+"use static";
+
 Gem.STAR_CHANCE = 0.05;
 Gem.DESTROYER_CHANCE = 0.20;
 

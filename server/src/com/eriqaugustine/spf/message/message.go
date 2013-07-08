@@ -24,6 +24,7 @@ type Message struct {
 
 type InitMessagePart struct {
    Time uint64;
+   Pattern int;
 };
 
 type StartMessagePart struct {

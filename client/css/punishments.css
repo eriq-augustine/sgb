@@ -1,0 +1,21 @@
+#js-punishment-patterns-area h2 {
+   text-align: center;
+}
+
+.punishment-patterns {
+}
+
+.punishment-pattern {
+   display: inline-block;
+   margin: 20px;
+   padding: 5px;
+   outline: ridge 2px #888888;
+   cursor: pointer;
+}
+
+.punishment-pattern:hover {
+   background: yellow;
+}
+
+.pattern-row {
+}

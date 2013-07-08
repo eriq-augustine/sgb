@@ -14,8 +14,9 @@ function createBaseMessage(type, payload) {
    return JSON.stringify({Type: type, Payload: payload});
 }
 
-function createInitMessage() {
-   return createBaseMessage(Message.TYPE_INIT, {Time: new Date()});
+function createInitMessage(chosenPattern) {
+   return createBaseMessage(Message.TYPE_INIT, {Time: new Date(),
+                                                Pattern: chosenPattern});
 }
 
 function createMoveMessage(dropGemLocations, boardHash) {

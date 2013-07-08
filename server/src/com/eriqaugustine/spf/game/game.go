@@ -5,6 +5,7 @@ import (
    "math/rand"
    "com/eriqaugustine/spf/game/gem"
    "com/eriqaugustine/spf/game/board"
+   "com/eriqaugustine/spf/game/player"
 );
 
 const (
@@ -18,6 +19,7 @@ type Game struct {
    Id int;
    // Connection ids
    Players [2]int;
+   Patterns [2]int;
    Boards [2]*board.Board
    rand *rand.Rand;
    dropGroups [][2]gem.Gem;
@@ -25,13 +27,14 @@ type Game struct {
    Punishments [2]int;
 };
 
-func NewGame(player1 int, player2 int) *Game {
+func NewGame(player1 *player.PendingPlayer, player2 *player.PendingPlayer) *Game {
    nextId++;
 
    var game = new(Game);
 
    game.Id = nextId;
-   game.Players = [2]int{player1, player2};
+   game.Players = [2]int{player1.PlayerId, player2.PlayerId};
+   game.Patterns = [2]int{player1.DropPattern, player2.DropPattern};
    game.rand = rand.New(rand.NewSource(time.Now().UnixNano()));
    game.dropGroups = make([][2]gem.Gem, 0);
    // Becausse two groups are given out intially, the initial drop
@@ -65,6 +68,10 @@ func (this *Game) GetOpponentId(playerId int) int {
 
 func (this *Game) GetOpponentOrdinal(playerId int) int {
    return (this.GetPlayerOrdinal(playerId) + 1) % 2;
+}
+
+func (this *Game) GetOppositeOrdinal(playerOrdinal int) int {
+   return (playerOrdinal + 1) % 2;
 }
 
 func (this *Game) GetPlayerOrdinal(playerId int) int {
@@ -141,7 +148,10 @@ func (this *Game) advanceBoard(playerOrdinal int) (*[][]*gem.Gem, bool) {
 
    var punishments int = this.adjustPunishments(playerOrdinal, destroyed);
 
-   punishmentGems, success := this.Boards[playerOrdinal].Punish(punishments);
+   punishmentGems, success :=
+      this.Boards[playerOrdinal].Punish(
+         this.Patterns[this.GetOppositeOrdinal(playerOrdinal)],
+         punishments);
 
    return punishmentGems, success && this.Boards[playerOrdinal].CanDrop();
 }

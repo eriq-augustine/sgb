@@ -8,15 +8,25 @@ import (
 
 var random = rand.New(rand.NewSource(time.Now().UnixNano()));
 
-var DebugDropPattern DropPattern = DropPattern{[][]int{
-   []int{COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED},
-   []int{COLOR_YELLOW, COLOR_YELLOW, COLOR_YELLOW, COLOR_YELLOW, COLOR_YELLOW, COLOR_YELLOW},
-   []int{COLOR_GREEN, COLOR_GREEN, COLOR_GREEN, COLOR_GREEN, COLOR_GREEN, COLOR_GREEN},
-   []int{COLOR_BLUE, COLOR_BLUE, COLOR_BLUE, COLOR_BLUE, COLOR_BLUE, COLOR_BLUE},
-}};
-
 type DropPattern struct {
    colors [][]int;
+};
+
+const NUM_PATTERNS = 2;
+
+var patterns = []DropPattern{
+   DropPattern{[][]int{
+      []int{COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED},
+      []int{COLOR_YELLOW, COLOR_YELLOW, COLOR_YELLOW, COLOR_YELLOW, COLOR_YELLOW, COLOR_YELLOW},
+      []int{COLOR_GREEN, COLOR_GREEN, COLOR_GREEN, COLOR_GREEN, COLOR_GREEN, COLOR_GREEN},
+      []int{COLOR_BLUE, COLOR_BLUE, COLOR_BLUE, COLOR_BLUE, COLOR_BLUE, COLOR_BLUE},
+   }},
+   DropPattern{[][]int{
+      []int{COLOR_RED, COLOR_GREEN, COLOR_BLUE, COLOR_YELLOW, COLOR_RED, COLOR_GREEN},
+      []int{COLOR_RED, COLOR_GREEN, COLOR_BLUE, COLOR_YELLOW, COLOR_RED, COLOR_GREEN},
+      []int{COLOR_RED, COLOR_GREEN, COLOR_BLUE, COLOR_YELLOW, COLOR_RED, COLOR_GREEN},
+      []int{COLOR_RED, COLOR_GREEN, COLOR_BLUE, COLOR_YELLOW, COLOR_RED, COLOR_GREEN},
+   }},
 };
 
 // Fill |col| in |gems| with |count| gems.
@@ -32,15 +42,15 @@ func (this *DropPattern) fillCol(gems *[][]*Gem, col int, count int) {
 //  a grid. It is the gems that go in each column.
 // The second return is false if the player loses.
 // The gems will always be returned so the loser can see their own defeat.
-func GetPunishmentGems(punishments int,
-                       board *[][]*Gem,
-                       pattern DropPattern) (*[][]*Gem, bool) {
+func GetPunishmentGems(dropPattern int,
+                       punishments int,
+                       board *[][]*Gem) (*[][]*Gem, bool) {
    var gems [][]*Gem = make([][]*Gem, len((*board)[0]));
 
    colCounts, success := getColCounts(punishments, board);
 
    for col, count := range *colCounts {
-      pattern.fillCol(&gems, col, count);
+      patterns[dropPattern].fillCol(&gems, col, count);
    }
 
    return &gems, success;

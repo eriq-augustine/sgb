@@ -58,6 +58,35 @@ function stopRenderer() {
    return true;
 }
 
+// Statically render the drop patterns.
+function staticRenderDropPatterns(targetId, clickHandler) {
+   var html = '<div class="punishment-patterns">';
+
+   for (var index = 0; index < punishments.NUM_PUNISHMENT_PATTERNS; index++) {
+      html += '<div class="punishment-pattern">';
+
+      var pattern = getPunishmentPattern(index);
+      for (var i = pattern.length - 1; i >= 0; i--) {
+         html += '<div class="pattern-row">';
+         for (var j = 0; j < pattern[i].length; j++) {
+            var classes = 'board-cell renderer-gem renderer-gem-normal-' + pattern[i][j];
+            var handler = '';
+            if (clickHandler) {
+               handler = 'onClick="' + clickHandler + '(' + index + ');"';
+            }
+            html += '<div class="' + classes + '" ' + handler + '></div>';
+         }
+         html += '</div>';
+      }
+
+      html += '</div>';
+   }
+
+   html += '</div>';
+
+   $('#' + targetId).html(html);
+}
+
 // Request an initial render of the board.
 // This will layout the html.
 function requestInitBoard(boardId) {

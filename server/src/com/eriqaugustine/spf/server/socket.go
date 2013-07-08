@@ -9,6 +9,7 @@ import (
    "com/eriqaugustine/spf/game"
    "com/eriqaugustine/spf/game/gem"
    "com/eriqaugustine/spf/message"
+   "com/eriqaugustine/spf/game/player"
 );
 
 var connectionId int = 0;
@@ -20,7 +21,7 @@ var connections = make(map[int]*websocket.Conn);
 // Note: there are two entries per game (one per player).
 var activeGames = make(map[int]*game.Game);
 
-var waitingPlayer int = -1;
+var waitingPlayer *player.PendingPlayer = nil;
 
 func GameSocket(ws *websocket.Conn) {
    connectionId++;
@@ -50,15 +51,23 @@ func GameSocket(ws *websocket.Conn) {
       var messagePart = msg.DecodeMessagePart();
       switch msgType := messagePart.(type) {
          case message.InitMessagePart:
-            if (waitingPlayer == -1) {
-               waitingPlayer = id;
+            var initPart, _ = messagePart.(message.InitMessagePart);
+            var player player.PendingPlayer = player.PendingPlayer{id, initPart.Pattern};
+
+            if (initPart.Pattern < 0 || initPart.Pattern >= gem.NUM_PATTERNS) {
+               fmt.Printf("ERROR: Unknown drop pattern (%d)\n", initPart.Pattern);
+               break SocketLifeLoop;
+            }
+
+            if (waitingPlayer == nil) {
+               waitingPlayer = &player;
             } else {
-               var newGame *game.Game = game.NewGame(id, waitingPlayer);
+               var newGame *game.Game = game.NewGame(&player, waitingPlayer);
 
                activeGames[id] = newGame;
-               activeGames[waitingPlayer] = newGame;
+               activeGames[waitingPlayer.PlayerId] = newGame;
 
-               waitingPlayer = -1;
+               waitingPlayer = nil;
                broadcastStart(newGame);
             }
          case message.MoveMessagePart:
@@ -94,8 +103,8 @@ func GameSocket(ws *websocket.Conn) {
    }
 
    // If this player i waiting (in the queue), remove them.
-   if (waitingPlayer == id) {
-      waitingPlayer = -1;
+   if (waitingPlayer != nil && waitingPlayer.PlayerId == id) {
+      waitingPlayer = nil;
    }
 
    closeGame(id);

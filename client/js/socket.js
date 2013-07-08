@@ -4,12 +4,12 @@
 Socket.SERVER = 'ws://66.169.236.4:3030/gamesocket';
 // Socket.SERVER = 'ws://localhost:12345/testsocket';
 
-function Socket() {
+function Socket(chosenPattern) {
    this.ws = new WebSocket(Socket.SERVER);
 
    this.ws.onmessage = this.onMessage.bind(this);
    this.ws.onclose = this.onClose.bind(this);
-   this.ws.onopen = this.onOpen.bind(this);
+   this.ws.onopen = this.onOpen.bind(this, chosenPattern);
    this.ws.onerror = this.onError.bind(this);
 }
 
@@ -66,9 +66,9 @@ Socket.prototype.onClose = function(messageEvent) {
    connectionClosed();
 };
 
-Socket.prototype.onOpen = function(messageEvent) {
+Socket.prototype.onOpen = function(chosenPattern, messageEvent) {
    debug("Connection to server opened.");
-   this.ws.send(createInitMessage());
+   this.ws.send(createInitMessage(chosenPattern));
 };
 
 Socket.prototype.onError = function(messageEvent) {
