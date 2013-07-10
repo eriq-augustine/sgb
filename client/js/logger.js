@@ -3,11 +3,11 @@
 function error(message) {
    console.log((new Error(message)).stack);
 
-   spfGet('_game_').stop();
+   sgbGet('_game_').stop();
 }
 
 function debug(message) {
-   if (spfGet('debug')) {
+   if (sgbGet('debug')) {
       console.log('DEBUG: ' + message);
    }
 }

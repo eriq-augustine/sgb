@@ -3,7 +3,7 @@ package main;
 import (
    "net/http"
    "code.google.com/p/go.net/websocket"
-   "com/eriqaugustine/spf/server"
+   "com/eriqaugustine/sgb/server"
 );
 
 const (

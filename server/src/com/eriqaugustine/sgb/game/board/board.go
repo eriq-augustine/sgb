@@ -4,8 +4,8 @@ import (
    "io"
    "fmt"
    "crypto/md5"
-   "com/eriqaugustine/spf/game/gem"
-   "com/eriqaugustine/spf/game/constants"
+   "com/eriqaugustine/sgb/game/gem"
+   "com/eriqaugustine/sgb/game/constants"
 );
 
 type Board struct {

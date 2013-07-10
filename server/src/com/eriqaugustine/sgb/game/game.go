@@ -3,9 +3,9 @@ package game;
 import (
    "time"
    "math/rand"
-   "com/eriqaugustine/spf/game/gem"
-   "com/eriqaugustine/spf/game/board"
-   "com/eriqaugustine/spf/game/player"
+   "com/eriqaugustine/sgb/game/gem"
+   "com/eriqaugustine/sgb/game/board"
+   "com/eriqaugustine/sgb/game/player"
 );
 
 const (

@@ -25,27 +25,27 @@ Game.STATE_WIN = 10;
 Game.STATE_NO_CONTEST = 11;
 Game.NUM_STATES = 12;
 
-// Provide controled access to spf variables.
-function spfGet(key) {
-   if (window._spf_) {
-      return window._spf_[key];
+// Provide controled access to sgb variables.
+function sgbGet(key) {
+   if (window._sgb_) {
+      return window._sgb_[key];
    }
 
    return undefined;
 }
 
-function spfSet(key, value) {
-   if (!window._spf_) {
-      window._spf_ = {};
+function sgbSet(key, value) {
+   if (!window._sgb_) {
+      window._sgb_ = {};
    }
 
-   window._spf_[key] = value;
+   window._sgb_[key] = value;
 }
 
-function spfRemove(key) {
-   if (window._spf_) {
-      var temp = window._spf_[key];
-      delete window._spf_[key];
+function sgbRemove(key) {
+   if (window._sgb_) {
+      var temp = window._sgb_[key];
+      delete window._sgb_[key];
       return temp;
    }
 
@@ -54,60 +54,60 @@ function spfRemove(key) {
 
 // Static access to the game.
 function initGame(chosenPattern, gameStartCallback) {
-   spfSet('debug', true);
-   spfSet('_game_', new Game(chosenPattern, gameStartCallback));
+   sgbSet('debug', true);
+   sgbSet('_game_', new Game(chosenPattern, gameStartCallback));
 }
 
 function dropComplete(dropGemLocations, hash) {
-   spfGet('_game_').controlledDropComplete(dropGemLocations, hash);
+   sgbGet('_game_').controlledDropComplete(dropGemLocations, hash);
 }
 
 function loseGame() {
-   spfGet('_game_').lose();
+   sgbGet('_game_').lose();
 }
 
 function winGame() {
-   spfGet('_game_').win();
+   sgbGet('_game_').win();
 }
 
 function noContest() {
-   spfGet('_game_').noContest();
+   sgbGet('_game_').noContest();
 }
 
 function startGame(dropGroups) {
-   spfGet('_game_').start(dropGroups);
+   sgbGet('_game_').start(dropGroups);
 }
 
 function nextTurnInfo(dropGroup, playerPunishments, opponentPunishments) {
-   spfGet('_game_').nextTurnInfo(dropGroup,
+   sgbGet('_game_').nextTurnInfo(dropGroup,
                                  playerPunishments,
                                  opponentPunishments);
 }
 
 function updatePlayerPunishments(playerPunishmentCount) {
-   spfGet('_game_').updatePlayerPunishments(playerPunishmentCount);
+   sgbGet('_game_').updatePlayerPunishments(playerPunishmentCount);
 }
 
 function updateOpponent(punishments, board, dropGroup) {
-   spfGet('_game_').updateOpponent(punishments, board, dropGroup);
+   sgbGet('_game_').updateOpponent(punishments, board, dropGroup);
 }
 
 function destructionComplete() {
-   spfGet('_game_').destructionComplete();
+   sgbGet('_game_').destructionComplete();
 }
 
 function opponentDropGroupUpdate(dropGemLocations) {
-   spfGet('_game_').opponentDropGroupUpdate(dropGemLocations);
+   sgbGet('_game_').opponentDropGroupUpdate(dropGemLocations);
 }
 
 function connectionClosed() {
-   spfGet('_game_').connectionClosed();
+   sgbGet('_game_').connectionClosed();
 }
 
 function Game(chosenPattern, gameStartCallback) {
    this.logicWorker = new Worker("js/logicTimer.js");
    this.logicWorker.onmessage = function(evt) {
-      spfGet('_game_').gameTick();
+      sgbGet('_game_').gameTick();
    };
 
    this.state = Game.STATE_INIT;
@@ -383,19 +383,19 @@ Game.prototype.updateOpponent = function(punishments, board, nextDrop) {
 document.addEventListener('keydown', function(event) {
    switch(event.keyCode) {
       case 32:  // Space
-         spfGet('_game_').dropNow();
+         sgbGet('_game_').dropNow();
          break;
       case 37:  // Left Arrow
-         spfGet('_game_').goLeft();
+         sgbGet('_game_').goLeft();
          break;
       case 38:  // Up Arrow
-         spfGet('_game_').changeOrientation();
+         sgbGet('_game_').changeOrientation();
          break;
       case 39:  // Right Arrow
-         spfGet('_game_').goRight();
+         sgbGet('_game_').goRight();
          break;
       case 40:  // Down Arrow
-         spfGet('_game_').goDown();
+         sgbGet('_game_').goDown();
          break;
    }
 });

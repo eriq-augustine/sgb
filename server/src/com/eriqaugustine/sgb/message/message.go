@@ -3,7 +3,7 @@ package message;
 import (
    "fmt"
    "encoding/json"
-   "com/eriqaugustine/spf/game/gem"
+   "com/eriqaugustine/sgb/game/gem"
 );
 
 const (

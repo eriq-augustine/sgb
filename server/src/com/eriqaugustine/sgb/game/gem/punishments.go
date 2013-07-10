@@ -3,7 +3,7 @@ package gem;
 import (
    "time"
    "math/rand"
-   "com/eriqaugustine/spf/game/constants"
+   "com/eriqaugustine/sgb/game/constants"
 );
 
 var random = rand.New(rand.NewSource(time.Now().UnixNano()));

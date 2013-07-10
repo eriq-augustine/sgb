@@ -3,24 +3,24 @@
 var boardLookup = {};
 
 function addBoard(board) {
-   if (!spfGet('_boardLookup_')) {
-      spfSet('_boardLookup_', {});
+   if (!sgbGet('_boardLookup_')) {
+      sgbSet('_boardLookup_', {});
    }
 
-   spfGet('_boardLookup_')[board.id] = board;
+   sgbGet('_boardLookup_')[board.id] = board;
 }
 
 function getBoard(id) {
-   if (spfGet('_boardLookup_')) {
-      return spfGet('_boardLookup_')[id];
+   if (sgbGet('_boardLookup_')) {
+      return sgbGet('_boardLookup_')[id];
    }
 
    return undefined;
 }
 
 function removeBoard(id) {
-   if (spfGet('_boardLookup_')) {
-      delete spfGet('_boardLookup_')[id];
+   if (sgbGet('_boardLookup_')) {
+      delete sgbGet('_boardLookup_')[id];
    }
 }
 

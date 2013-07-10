@@ -30,29 +30,29 @@
 }());
 
 function initRenderer() {
-   if (spfGet('_renderer_')) {
+   if (sgbGet('_renderer_')) {
       error('Double init on renderer.');
       return false;
    }
 
-   spfSet('_renderer_', new InternalRenderer());
+   sgbSet('_renderer_', new InternalRenderer());
 
    return true;
 }
 
 function startRenderer() {
-   if (!spfGet('_renderer_')) {
+   if (!sgbGet('_renderer_')) {
       error('There is no renderer to start.');
       return false;
    }
 
-   spfGet('_renderer_').start();
+   sgbGet('_renderer_').start();
    return true;
 }
 
 function stopRenderer() {
-   if (spfGet('_renderer_')) {
-      spfGet('_renderer_').stop();
+   if (sgbGet('_renderer_')) {
+      sgbGet('_renderer_').stop();
    }
 
    return true;
@@ -90,30 +90,30 @@ function staticRenderDropPatterns(targetId, clickHandler) {
 // Request an initial render of the board.
 // This will layout the html.
 function requestInitBoard(boardId) {
-   if (spfGet('_renderer_')) {
-      spfGet('_renderer_').addUpdate({type: 'boardInit', boardId: boardId});
+   if (sgbGet('_renderer_')) {
+      sgbGet('_renderer_').addUpdate({type: 'boardInit', boardId: boardId});
    }
 }
 
 // Request a re-render of the entire board.
 function requestBoardRender(boardId) {
-   if (spfGet('_renderer_')) {
+   if (sgbGet('_renderer_')) {
       // NOTE(eriq): This could be made more efficient by bucketing the requests by board.
-      spfGet('_renderer_').addUpdate({type: 'board', boardId: boardId});
+      sgbGet('_renderer_').addUpdate({type: 'board', boardId: boardId});
    }
 }
 
 // Request a re-render of a specific cell.
 function requestCellRender(boardId, row, col) {
-   if (spfGet('_renderer_')) {
-      spfGet('_renderer_').addUpdate({type: 'cell', boardId: boardId, row: row, col: col});
+   if (sgbGet('_renderer_')) {
+      sgbGet('_renderer_').addUpdate({type: 'cell', boardId: boardId, row: row, col: col});
    }
 }
 
 // Request the destruction of a gem. This will trigger an animation on the cell.
 function requestDestroy(boardId, row, col, type, color) {
-   if (spfGet('_renderer_')) {
-      spfGet('_renderer_').addUpdate({type: 'destroyGem',
+   if (sgbGet('_renderer_')) {
+      sgbGet('_renderer_').addUpdate({type: 'destroyGem',
                                       boardId: boardId,
                                       row: row, col: col,
                                       gemType: type, color: color});
@@ -122,14 +122,14 @@ function requestDestroy(boardId, row, col, type, color) {
 
 // Request a re-render of the next drop group display.
 function requestNextDropGroupRender(boardId) {
-   if (spfGet('_renderer_')) {
-      spfGet('_renderer_').addUpdate({type: 'nextDropGroup', boardId: boardId});
+   if (sgbGet('_renderer_')) {
+      sgbGet('_renderer_').addUpdate({type: 'nextDropGroup', boardId: boardId});
    }
 }
 
 function requestPunishmentRender(boardId) {
-   if (spfGet('_renderer_')) {
-      spfGet('_renderer_').addUpdate({type: 'punishments', boardId: boardId});
+   if (sgbGet('_renderer_')) {
+      sgbGet('_renderer_').addUpdate({type: 'punishments', boardId: boardId});
    }
 }
 
@@ -137,8 +137,8 @@ function requestPunishmentRender(boardId) {
 // All destruction animations are immediatley canceled.
 function requestCancelDestruction(boardId) {
    // TODO(eriq): Is this threadsafe?
-   if (spfGet('_renderer_')) {
-      spfGet('_renderer_').cancelDestructions(boardId);
+   if (sgbGet('_renderer_')) {
+      sgbGet('_renderer_').cancelDestructions(boardId);
    }
 }
 
@@ -353,12 +353,12 @@ InternalRenderer.prototype.start = function() {
    this.animationMachine.start();
 
    (function renderLoop() {
-      if (spfGet('_renderer_').render) {
+      if (sgbGet('_renderer_').render) {
          window.requestAnimationFrame(renderLoop);
       }
 
       // Even if the renderer has been stopped, do one last render.
-      spfGet('_renderer_').update();
+      sgbGet('_renderer_').update();
    })();
 };
 

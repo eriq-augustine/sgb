@@ -6,10 +6,10 @@ import (
    "net"
    "io"
    "code.google.com/p/go.net/websocket"
-   "com/eriqaugustine/spf/game"
-   "com/eriqaugustine/spf/game/gem"
-   "com/eriqaugustine/spf/message"
-   "com/eriqaugustine/spf/game/player"
+   "com/eriqaugustine/sgb/game"
+   "com/eriqaugustine/sgb/game/gem"
+   "com/eriqaugustine/sgb/message"
+   "com/eriqaugustine/sgb/game/player"
 );
 
 var connectionId int = 0;
