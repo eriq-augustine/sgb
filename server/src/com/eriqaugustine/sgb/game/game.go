@@ -1,8 +1,6 @@
 package game;
 
 import (
-   "time"
-   "math/rand"
    "com/eriqaugustine/sgb/util"
    "com/eriqaugustine/sgb/game/gem"
    "com/eriqaugustine/sgb/game/board"
@@ -65,7 +63,7 @@ type Game struct {
    Players [2]int;
    Patterns [2]int;
    Boards [2]*board.Board
-   rand *rand.Rand;
+   gemGenerator *gem.GemGenerator;
    dropGroups [][2]gem.Gem;
    playerDropCursors [2]int;
    punishments [2]Punishments;
@@ -80,7 +78,7 @@ func NewGame(player1 *player.PendingPlayer, player2 *player.PendingPlayer) *Game
    game.Id = nextId;
    game.Players = [2]int{player1.PlayerId, player2.PlayerId};
    game.Patterns = [2]int{player1.DropPattern, player2.DropPattern};
-   game.rand = rand.New(rand.NewSource(time.Now().UnixNano()));
+   game.gemGenerator = gem.NewGemGenerator();
    game.dropGroups = make([][2]gem.Gem, 0);
    // Becausse two groups are given out intially, the initial drop
    //  cursors must be kept track of.
@@ -100,8 +98,8 @@ func NewGame(player1 *player.PendingPlayer, player2 *player.PendingPlayer) *Game
 func (this *Game) nextDrop(playerOrdinal int) [2]gem.Gem {
    if this.playerDropCursors[playerOrdinal] == len(this.dropGroups) {
       this.dropGroups =
-         append(this.dropGroups, [2]gem.Gem{gem.NewGem(this.rand),
-                                            gem.NewGem(this.rand)});
+         append(this.dropGroups, [2]gem.Gem{this.gemGenerator.NextGem(),
+                                            this.gemGenerator.NextGem()});
    }
 
    this.playerDropCursors[playerOrdinal]++;
@@ -152,11 +150,11 @@ func (this *Game) InitialDrops() [2][2]gem.Gem {
    this.playerDropCursors[1] = 2;
 
    this.dropGroups =
-      append(this.dropGroups, [2]gem.Gem{gem.NewGem(this.rand),
-                                         gem.NewGem(this.rand)});
+      append(this.dropGroups, [2]gem.Gem{this.gemGenerator.NextGem(),
+                                         this.gemGenerator.NextGem()});
    this.dropGroups =
-      append(this.dropGroups, [2]gem.Gem{gem.NewGem(this.rand),
-                                         gem.NewGem(this.rand)});
+      append(this.dropGroups, [2]gem.Gem{this.gemGenerator.NextGem(),
+                                         this.gemGenerator.NextGem()});
 
    return [2][2]gem.Gem{this.dropGroups[0], this.dropGroups[1]};
 }

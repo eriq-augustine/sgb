@@ -3,6 +3,7 @@ package gem;
 import (
    "fmt"
    "strconv"
+   "time"
    "math/rand"
 );
 
@@ -32,6 +33,36 @@ const (
    STAR_CHANCE = 2;
    DESTROYER_CHANCE = 18;
 );
+
+const STAR_INTERVAL = 50;
+
+type GemGenerator struct {
+   rand *rand.Rand;
+   // Need to keep track of the count because stars come at regular intervals.
+   count int;
+};
+
+func NewGemGenerator() *GemGenerator {
+   var generator GemGenerator = GemGenerator{rand.New(rand.NewSource(time.Now().UnixNano())), 0};
+   return &generator;
+}
+
+func (this *GemGenerator) NextGem() Gem {
+   this.count++;
+
+   if (this.count % STAR_INTERVAL == 0) {
+      return Gem{TYPE_STAR, 0, 0};
+   } else {
+      var typeRand int = rand.Intn(100);
+      var gemType = TYPE_NORMAL;
+
+      if typeRand <= DESTROYER_CHANCE {
+         gemType = TYPE_DESTROYER;
+      }
+
+      return Gem{gemType, rand.Intn(NUM_COLORS), 0};
+   }
+}
 
 type Gem struct {
    Type int;
