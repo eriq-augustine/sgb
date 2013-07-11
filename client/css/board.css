@@ -47,6 +47,16 @@
    vertical-align: top;
 }
 
+.right-board .board-meta-area {
+   float: left;
+   margin-right: 20px;
+}
+
+.left-board .board-meta-area {
+   float: right;
+   margin-left: 20px;
+}
+
 .on-board-notification {
    position: absolute;
    top: 0;
@@ -90,16 +100,22 @@
    display: inline-block;
    outline: solid 1px black;
    vertical-align: top;
-   margin-right: 20px;
 }
 
 .next-group {
 }
 
+.left-board .board-score-area {
+   right: -10px;
+}
+
+.right-board .board-score-area {
+   left: -10px;
+}
+
 .board-score-area {
    position: absolute;
    bottom: 0;
-   left: -10px;
 }
 
 .board-score {

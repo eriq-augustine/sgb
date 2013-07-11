@@ -89,9 +89,9 @@ function staticRenderDropPatterns(targetId, clickHandler) {
 
 // Request an initial render of the board.
 // This will layout the html.
-function requestInitBoard(boardId) {
+function requestInitBoard(boardId, left) {
    if (sgbGet('_renderer_')) {
-      sgbGet('_renderer_').addUpdate({type: 'boardInit', boardId: boardId});
+      sgbGet('_renderer_').addUpdate({type: 'boardInit', boardId: boardId, left: left});
    }
 }
 
@@ -179,7 +179,7 @@ InternalRenderer.prototype.update = function() {
             this.renderCell(updateData.boardId, updateData.row, updateData.col);
             break;
          case 'boardInit':
-            this.initBoard(updateData.boardId);
+            this.initBoard(updateData.boardId, updateData.left);
             break;
          case 'nextDropGroup':
             this.renderNextDropGroup(updateData.boardId);
@@ -210,9 +210,13 @@ InternalRenderer.prototype.update = function() {
    this.animationMachine.maybeAnimate();
 };
 
-InternalRenderer.prototype.initBoard = function(boardId) {
+InternalRenderer.prototype.initBoard = function(boardId, left) {
    var board = getBoard(boardId);
-   var html = '<div class="board-area">';
+
+   var boardClasses = 'board-area ';
+   boardClasses += (left ? 'left-board' : 'right-board');
+
+   var html = '<div class="' + boardClasses + '">';
 
    html += '<div class="board-meta-area">';
 

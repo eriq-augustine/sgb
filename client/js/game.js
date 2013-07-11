@@ -296,9 +296,11 @@ Game.prototype.start = function(dropGroups) {
    }
 
    this.playerBoard = new Board('js-player-board', Game.BOARD_HEIGHT,
-                                 Game.BOARD_WIDTH, dropGroups[0]);
+                                 Game.BOARD_WIDTH, dropGroups[0],
+                                 true);
    this.opponentBoard = new Board('js-opponent-board', Game.BOARD_HEIGHT,
-                                  Game.BOARD_WIDTH, dropGroups[0]);
+                                  Game.BOARD_WIDTH, dropGroups[0],
+                                  false);
 
    this.dropQueue.push(dropGroups[1]);
 

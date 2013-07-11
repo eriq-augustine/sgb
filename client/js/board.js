@@ -24,7 +24,7 @@ function removeBoard(id) {
    }
 }
 
-function Board(id, height, width, nextDropGroup) {
+function Board(id, height, width, nextDropGroup, left) {
    this.DROP_COLUMN = 3;
 
    this.id = id;
@@ -51,7 +51,7 @@ function Board(id, height, width, nextDropGroup) {
    }
 
    addBoard(this);
-   requestInitBoard(this.id);
+   requestInitBoard(this.id, left);
 }
 
 Board.prototype.hash = function() {
