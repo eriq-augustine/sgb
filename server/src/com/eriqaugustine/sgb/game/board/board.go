@@ -48,13 +48,13 @@ func (this *Board) AdvanceTimers() {
 
 // Place all punishments and return the punishments.
 // The second return is false on lose, however the gems will still be valid..
-func (this *Board) Punish(dropPattern int, punishments int) (*[][]*gem.Gem, bool) {
+func (this *Board) Punish(dropPattern int, starPunishments int, normalPunishments int) (*[][]*gem.Gem, bool) {
    var punishmentGems [][]*gem.Gem = make([][]*gem.Gem, 0);
    var success bool = true;
    var gemPtr *[][]*gem.Gem;
 
-   if punishments > 0 {
-      gemPtr, success = gem.GetPunishmentGems(dropPattern, punishments, &this.Board);
+   if (starPunishments + normalPunishments > 0) {
+      gemPtr, success = gem.GetPunishmentGems(dropPattern, starPunishments, normalPunishments, &this.Board);
       punishmentGems = *gemPtr;
 
       var baselines *[]int = gem.GetBaselines(&this.Board);
@@ -91,6 +91,26 @@ func (this *Board) Hash() string {
    return fmt.Sprintf("%x", hash.Sum(nil));
 }
 
+func (this *Board) String() string {
+   var rtn string = "";
+
+   for _, row := range this.Board {
+      for _, boardGem := range row {
+         if (boardGem == nil) {
+            rtn += "___"
+         } else {
+            rtn += boardGem.String();
+         }
+
+         rtn += " | ";
+      }
+
+      rtn += "\n";
+   }
+
+   return rtn;
+}
+
 func (this *Board) Serialize() map[string]gem.Gem {
    var rtn map[string]gem.Gem = make(map[string]gem.Gem);
 
@@ -106,23 +126,26 @@ func (this *Board) Serialize() map[string]gem.Gem {
 }
 
 // Fall and destroy any blocks.
-// Return the number of gems destroyed.
-func (this *Board) Stabalize() int {
-   var destroyed int = 0;
+// Return the number of gems destroyed,
+//  the first int by stars, the second int by normal destroyers.
+func (this *Board) Stabalize() (int, int) {
+   var normalDestroyed int = 0;
+   var starDestroyed int = 0;
 
    // Just keep falling and destroying until nither happens.
    for {
       var fell bool = this.fall();
-      var iterationDestroyed int = this.destroy();
+      iterationStarDestroyed, iterationNormalDestroyed := this.destroy();
 
-      destroyed += iterationDestroyed;
+      starDestroyed += iterationStarDestroyed;
+      normalDestroyed += iterationNormalDestroyed;
 
-      if !fell && (iterationDestroyed == 0) {
+      if !fell && iterationStarDestroyed == 0 && iterationNormalDestroyed == 0 {
          break;
       }
    }
 
-   return destroyed;
+   return starDestroyed, normalDestroyed;
 }
 
 // Return true if any pieces fell.
@@ -148,8 +171,9 @@ func (this *Board) fall() bool {
    return dropped;
 }
 
-// Return the number of gems that were destroyed.
-func (this *Board) destroy() int {
+// Return the number of gems that were destroyed
+//  first by stars, then by normal destroyers.
+func (this *Board) destroy() (int, int) {
    // Keep a map (not list (dupes)) of gems to be destroyed
    // {location: true};
    var toDestroy map[location]bool = make(map[location]bool);
@@ -179,6 +203,7 @@ func (this *Board) destroy() int {
    for _, location := range *starColorLocations {
       toDestroy[location] = true;
    }
+   var starDestroyed = len(toDestroy);
 
    // Handle standard destroyers
    for _, destroyerLocation := range (*destroyers)["destroyers"] {
@@ -194,7 +219,7 @@ func (this *Board) destroy() int {
       this.clearGem(destroyLocation.row, destroyLocation.col);
    }
 
-   return len(toDestroy);
+   return starDestroyed, len(toDestroy) - starDestroyed;
 }
 
 func (this *Board) collectColors(colors map[int]bool) *[]location {

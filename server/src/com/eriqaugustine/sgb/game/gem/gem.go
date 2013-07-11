@@ -6,7 +6,10 @@ import (
    "math/rand"
 );
 
-const MAXED_LOCKED_TIMER = 5;
+const (
+   STAR_LOCKED_TIMER = 3
+   MAXED_LOCKED_TIMER = 5
+);
 
 const (
    TYPE_NORMAL = iota
@@ -36,9 +39,39 @@ type Gem struct {
    Timer int;
 };
 
-func (this *Gem) String() string {
+func (this *Gem) GoString() string {
    return fmt.Sprintf("Type: %d, Color: %d, Timer: %d",
                       this.Type, this.Color, this.Timer);
+}
+
+func (this *Gem) String() string {
+   var rtn string = "";
+
+   switch this.Type {
+      case TYPE_NORMAL:
+         rtn += "N";
+      case TYPE_DESTROYER:
+         rtn += "D";
+      case TYPE_LOCKED:
+         rtn += "L";
+      case TYPE_STAR:
+         rtn += "S";
+   }
+
+   switch this.Color {
+      case COLOR_RED:
+         rtn += "R";
+      case COLOR_YELLOW:
+         rtn += "Y";
+      case COLOR_GREEN:
+         rtn += "G";
+      case COLOR_BLUE:
+         rtn += "B";
+   }
+
+   rtn += fmt.Sprintf("%d", this.Timer);
+
+   return rtn;
 }
 
 func (this *Gem) Hash() string {

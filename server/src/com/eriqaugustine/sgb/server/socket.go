@@ -28,6 +28,15 @@ func GameSocket(ws *websocket.Conn) {
    var id = connectionId;
    connections[id] = ws;
 
+   defer func(id int) {
+      // If this player i waiting (in the queue), remove them.
+      if (waitingPlayer != nil && waitingPlayer.PlayerId == id) {
+         waitingPlayer = nil;
+      }
+
+      closeGame(id);
+   }(id);
+
    var msg message.Message;
 
    SocketLifeLoop:
@@ -101,13 +110,6 @@ func GameSocket(ws *websocket.Conn) {
             continue;
       }
    }
-
-   // If this player i waiting (in the queue), remove them.
-   if (waitingPlayer != nil && waitingPlayer.PlayerId == id) {
-      waitingPlayer = nil;
-   }
-
-   closeGame(id);
 }
 
 func sendDropGroupUpdate(playerId int, messagePart message.DropGroupUpdateMessagePart) {
@@ -153,9 +155,8 @@ func broadcastStart(currentGame *game.Game) {
 
 func signalNextTurn(playerId int, dropGroup *[2]gem.Gem, punishments *[][]*gem.Gem, playerLost bool) {
    var currentGame *game.Game = activeGames[playerId];
-   var opponentOrdinal int = currentGame.GetOpponentOrdinal(playerId);
    var opponentId int = currentGame.GetOpponentId(playerId);
-   var opponentPunishments = currentGame.Punishments[opponentOrdinal];
+   var opponentPunishments int = currentGame.GetTotalPunishments(opponentId);
    var playerBoard = currentGame.Boards[currentGame.GetPlayerOrdinal(playerId)];
 
    // Tell the player the next turn info

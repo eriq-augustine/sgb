@@ -29,12 +29,36 @@ var patterns = []DropPattern{
    }},
 };
 
-// Fill |col| in |gems| with |count| gems.
-func (this *DropPattern) fillCol(gems *[][]*Gem, col int, count int) {
-   for i := 0; i < count; i++ {
-      var color = this.colors[i % len(this.colors)][col];
-      var newGem = Gem{TYPE_LOCKED, color, MAXED_LOCKED_TIMER};
-      (*gems)[col] = append((*gems)[col], &newGem);
+// Fill |gems| with the appropriatley colored and timed gems.
+// |colCounts| will be destroyed in the process.
+func (this *DropPattern) fillPunishments(gems *[][]*Gem,
+                                         colCounts *[]int,
+                                         starPunishments int) {
+   var gemCount int = 0;
+   var row int = 0;
+   var placed bool = true;
+
+   for placed {
+      placed = false;
+
+      for col := 0; col < len(*colCounts); col++ {
+         if ((*colCounts)[col] > 0) {
+            var timer = MAXED_LOCKED_TIMER;
+            if (gemCount < starPunishments) {
+               timer = STAR_LOCKED_TIMER;
+            }
+
+            var color = this.colors[row % len(this.colors)][col];
+            var newGem = Gem{TYPE_LOCKED, color, timer};
+            (*gems)[col] = append((*gems)[col], &newGem);
+
+            (*colCounts)[col]--;
+            placed = true;
+            gemCount++;
+         }
+      }
+
+      row++;
    }
 }
 
@@ -43,15 +67,13 @@ func (this *DropPattern) fillCol(gems *[][]*Gem, col int, count int) {
 // The second return is false if the player loses.
 // The gems will always be returned so the loser can see their own defeat.
 func GetPunishmentGems(dropPattern int,
-                       punishments int,
+                       starPunishments int,
+                       normalPunishments int,
                        board *[][]*Gem) (*[][]*Gem, bool) {
    var gems [][]*Gem = make([][]*Gem, len((*board)[0]));
 
-   colCounts, success := getColCounts(punishments, board);
-
-   for col, count := range *colCounts {
-      patterns[dropPattern].fillCol(&gems, col, count);
-   }
+   colCounts, success := getColCounts(starPunishments + normalPunishments, board);
+   patterns[dropPattern].fillPunishments(&gems, colCounts, starPunishments);
 
    return &gems, success;
 }

@@ -3,6 +3,7 @@ package game;
 import (
    "time"
    "math/rand"
+   "com/eriqaugustine/sgb/util"
    "com/eriqaugustine/sgb/game/gem"
    "com/eriqaugustine/sgb/game/board"
    "com/eriqaugustine/sgb/game/player"
@@ -15,6 +16,40 @@ const (
 
 var nextId int = 0;
 
+// Need to keep track of how many of each punishments come in.
+// Stars have a lower timer than normals.
+type Punishments struct {
+   stars int;
+   normals int;
+};
+
+func (this *Punishments) reset() {
+   this.stars = 0;
+   this.normals = 0;
+}
+
+// Returns the number of cancels made.
+func (this *Punishments) cancel(totalDestroyed int) int {
+   var initialTotal = this.total();
+
+   // Any canceling first comes out of the star puishments, then the normals.
+   var starCount = this.stars;
+   this.stars = math.Max(0, this.stars - totalDestroyed);
+   totalDestroyed -= (starCount - this.stars);
+   this.normals = math.Max(0, this.normals - totalDestroyed);
+
+   return initialTotal - this.total();
+}
+
+func (this *Punishments) add(starDestroyed int, normalDestroyed int) {
+   this.stars += starDestroyed;
+   this.normals += normalDestroyed;
+}
+
+func (this *Punishments) total() int {
+   return this.stars + this.normals;
+}
+
 type Game struct {
    Id int;
    // Connection ids
@@ -24,7 +59,7 @@ type Game struct {
    rand *rand.Rand;
    dropGroups [][2]gem.Gem;
    playerDropCursors [2]int;
-   Punishments [2]int;
+   punishments [2]Punishments;
 };
 
 func NewGame(player1 *player.PendingPlayer, player2 *player.PendingPlayer) *Game {
@@ -44,7 +79,7 @@ func NewGame(player1 *player.PendingPlayer, player2 *player.PendingPlayer) *Game
       board.NewBoard(BOARD_HEIGHT, BOARD_WIDTH),
       board.NewBoard(BOARD_HEIGHT, BOARD_WIDTH),
    };
-   game.Punishments = [2]int{0, 0};
+   game.punishments = [2]Punishments{Punishments{0, 0}, Punishments{0, 0}};
 
    return game;
 }
@@ -127,13 +162,14 @@ func (this *Game) MoveUpdate(playerId int, locations [2][2]int, hash string) (*[
    this.Boards[playerOrdinal].PlaceGem(&dropGroup[1], locations[1][0], locations[1][1]);
 
    if hash != this.Boards[playerOrdinal].Hash() {
+      println(this.Boards[playerOrdinal].String());
       panic("Board hashes differ!");
    }
 
    punishments, success := this.advanceBoard(playerOrdinal);
 
    // The player just took all of their punishments.
-   this.Punishments[playerOrdinal] = 0;
+   this.punishments[playerOrdinal].reset();
 
    var nextDrop = this.NextDropForPlayer(playerId);
    return &nextDrop, punishments, success;
@@ -144,34 +180,36 @@ func (this *Game) advanceBoard(playerOrdinal int) (*[][]*gem.Gem, bool) {
    // Advance any timers first.
    this.Boards[playerOrdinal].AdvanceTimers();
 
-   var destroyed int = this.Boards[playerOrdinal].Stabalize();
+   starDestroyed, normalDestroyed := this.Boards[playerOrdinal].Stabalize();
 
-   var punishments int = this.adjustPunishments(playerOrdinal, destroyed);
+   this.adjustPunishments(playerOrdinal, starDestroyed, normalDestroyed);
 
    punishmentGems, success :=
       this.Boards[playerOrdinal].Punish(
          this.Patterns[this.GetOppositeOrdinal(playerOrdinal)],
-         punishments);
+         this.punishments[playerOrdinal].stars,
+         this.punishments[playerOrdinal].normals);
 
    return punishmentGems, success && this.Boards[playerOrdinal].CanDrop();
 }
 
 // |playerOrdinal| just destroyed |destroyed| number of gems.
 // Adjust both players' punishments accordingly.
-// Returns the new punishment value for |playerOrdinal|.
-func (this *Game) adjustPunishments(playerOrdinal int, destroyed int) int {
-   var newPunishment int = this.Punishments[playerOrdinal] - destroyed;
-   if newPunishment < 0 {
-      this.Punishments[(playerOrdinal + 1) % 2] -= newPunishment;
-      newPunishment = 0;
-   }
+func (this *Game) adjustPunishments(playerOrdinal int, starDestroyed int, normalDestroyed int) {
+   var cancels int = this.punishments[playerOrdinal].cancel(starDestroyed + normalDestroyed);
 
-   this.Punishments[playerOrdinal] = newPunishment;
+   var enemyStarPunishments = math.Max(0, starDestroyed - cancels);
+   cancels -= (starDestroyed - enemyStarPunishments);
+   var enemyNormalPunishments = math.Max(0, normalDestroyed - cancels);
 
-   return newPunishment;
+   this.punishments[this.GetOppositeOrdinal(playerOrdinal)].add(enemyStarPunishments, enemyNormalPunishments);
 }
 
 // Check to see if the spot on the player's board is open.
 func (this *Game) AvailableSpot(playerId int, row int, col int) bool {
    return this.Boards[this.GetPlayerOrdinal(playerId)].AvailableSpot(row, col);
+}
+
+func (this *Game) GetTotalPunishments(playerId int) int {
+   return this.punishments[this.GetPlayerOrdinal(playerId)].total();
 }
