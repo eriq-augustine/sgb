@@ -10,6 +10,15 @@ import (
 );
 
 const (
+   // The score just for dropping a gem.
+   SCORE_DROP = 10
+   // Destroying a gem normally.
+   SCORE_NORMAL_DESTROY = 100
+   // Destroying a gem with a star.
+   SCORE_STAR_DESTROY = 50
+);
+
+const (
    BOARD_HEIGHT = 14
    BOARD_WIDTH = 6
 );
@@ -60,6 +69,7 @@ type Game struct {
    dropGroups [][2]gem.Gem;
    playerDropCursors [2]int;
    punishments [2]Punishments;
+   Scores [2]int;
 };
 
 func NewGame(player1 *player.PendingPlayer, player2 *player.PendingPlayer) *Game {
@@ -80,6 +90,8 @@ func NewGame(player1 *player.PendingPlayer, player2 *player.PendingPlayer) *Game
       board.NewBoard(BOARD_HEIGHT, BOARD_WIDTH),
    };
    game.punishments = [2]Punishments{Punishments{0, 0}, Punishments{0, 0}};
+
+   game.Scores = [2]int{0, 0};
 
    return game;
 }
@@ -181,6 +193,11 @@ func (this *Game) advanceBoard(playerOrdinal int) (*[][]*gem.Gem, bool) {
    this.Boards[playerOrdinal].AdvanceTimers();
 
    starDestroyed, normalDestroyed := this.Boards[playerOrdinal].Stabalize();
+
+   // Calculate scores.
+   this.Scores[playerOrdinal] += SCORE_DROP +
+                                 (SCORE_NORMAL_DESTROY * normalDestroyed) +
+                                 (SCORE_STAR_DESTROY * starDestroyed);
 
    this.adjustPunishments(playerOrdinal, starDestroyed, normalDestroyed);
 

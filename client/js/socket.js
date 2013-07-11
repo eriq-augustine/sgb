@@ -33,6 +33,7 @@ Socket.prototype.onMessage = function(messageEvent) {
          }
 
          nextTurnInfo(new DropGroup(message.Payload.Drop),
+                      message.Payload.PlayerScore,
                       message.Payload.PlayerPunishment,
                       message.Payload.OpponentPunishment);
          break;
@@ -40,6 +41,7 @@ Socket.prototype.onMessage = function(messageEvent) {
          var nextDrop = message.Payload.Win ? null : new DropGroup(message.Payload.OpponentNextDropGroup);
 
          updateOpponent(message.Payload.OpponentPunishment,
+                        message.Payload.OpponentScore,
                         message.Payload.OpponentBoard,
                         nextDrop);
          updatePlayerPunishments(message.Payload.PlayerPunishment);

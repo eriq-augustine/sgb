@@ -78,8 +78,9 @@ function startGame(dropGroups) {
    sgbGet('_game_').start(dropGroups);
 }
 
-function nextTurnInfo(dropGroup, playerPunishments, opponentPunishments) {
+function nextTurnInfo(dropGroup, playerScore, playerPunishments, opponentPunishments) {
    sgbGet('_game_').nextTurnInfo(dropGroup,
+                                 playerScore,
                                  playerPunishments,
                                  opponentPunishments);
 }
@@ -88,8 +89,8 @@ function updatePlayerPunishments(playerPunishmentCount) {
    sgbGet('_game_').updatePlayerPunishments(playerPunishmentCount);
 }
 
-function updateOpponent(punishments, board, dropGroup) {
-   sgbGet('_game_').updateOpponent(punishments, board, dropGroup);
+function updateOpponent(punishments, opponentScore, board, dropGroup) {
+   sgbGet('_game_').updateOpponent(punishments, opponentScore, board, dropGroup);
 }
 
 function destructionComplete() {
@@ -360,20 +361,25 @@ Game.prototype.updatePlayerPunishments = function(playerPunishmentCount) {
 };
 
 Game.prototype.nextTurnInfo = function(dropGroup,
+                                       playerScore,
                                        playerPunishments,
                                        opponentPunishments) {
    this.dropQueue.push(dropGroup);
 
    this.frozenPunishments = playerPunishments;
 
+   requestScoreRender(this.playerBoard.id, playerScore);
+
    // The player is taking all their punishments.
    this.updatePlayerPunishments(0);
    this.opponentBoard.modifyPunishments(opponentPunishments);
 };
 
-Game.prototype.updateOpponent = function(punishments, board, nextDrop) {
+Game.prototype.updateOpponent = function(punishments, opponentScore, board, nextDrop) {
    this.opponentBoard.modifyPunishments(punishments);
    this.opponentBoard.updateBoard(board);
+
+   requestScoreRender(this.opponentBoard.id, opponentScore);
 
    if (nextDrop) {
       this.opponentBoard.releaseGem(nextDrop);

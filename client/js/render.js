@@ -133,6 +133,14 @@ function requestPunishmentRender(boardId) {
    }
 }
 
+function requestScoreRender(boardId, score) {
+   if (sgbGet('_renderer_')) {
+      sgbGet('_renderer_').addUpdate({type: 'score',
+                                      boardId: boardId,
+                                      score: score});
+   }
+}
+
 // This is current not really a request.
 // All destruction animations are immediatley canceled.
 function requestCancelDestruction(boardId) {
@@ -187,6 +195,9 @@ InternalRenderer.prototype.update = function() {
                                updateData.row, updateData.col,
                                updateData.gemType, updateData.color);
             break;
+         case 'score':
+            this.renderScore(updateData.boardId, updateData.score);
+            break;
          default:
             error('Unknown update type: ' + updateData.type);
             break;
@@ -209,6 +220,10 @@ InternalRenderer.prototype.initBoard = function(boardId) {
    // Default orientation is DOWN.
    html += '  <div id="' + boardId + '-next-drop-group-first" class="next-group"></div>';
    html += '  <div id="' + boardId + '-next-drop-group-second" class="next-group"></div>';
+   html += ' </div>';
+
+   html += ' <div class="board-score-area">';
+   html += '  <div id="' + boardId + '-board-score" class="board-score">0</div>';
    html += ' </div>';
 
    html += '</div>';
@@ -346,6 +361,10 @@ InternalRenderer.prototype.renderNextDropGroup = function(boardId) {
 InternalRenderer.prototype.renderPunishments = function(boardId) {
    var punishments = getBoard(boardId).getPunishments();
    $('#' + boardId + '-punishments-number').html(punishments);
+};
+
+InternalRenderer.prototype.renderScore = function(boardId, score) {
+   $('#' + boardId + '-board-score').html(score);
 };
 
 InternalRenderer.prototype.start = function() {

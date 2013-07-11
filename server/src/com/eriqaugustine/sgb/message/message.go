@@ -40,6 +40,7 @@ type MoveMessagePart struct {
 type NextTurnMessagePart struct {
    Drop [2]gem.Gem;
    PlayerPunishment *[][]*gem.Gem;
+   PlayerScore int;
    OpponentPunishment int;
    Lose bool;
 };
@@ -47,6 +48,7 @@ type NextTurnMessagePart struct {
 type UpdateMessagePart struct {
    PlayerPunishment int;
    OpponentPunishment int;
+   OpponentScore int;
    OpponentBoard [][]*gem.Gem;
    OpponentNextDropGroup [2]gem.Gem;
    Win bool;

@@ -158,12 +158,14 @@ func signalNextTurn(playerId int, dropGroup *[2]gem.Gem, punishments *[][]*gem.G
    var opponentId int = currentGame.GetOpponentId(playerId);
    var opponentPunishments int = currentGame.GetTotalPunishments(opponentId);
    var playerBoard = currentGame.Boards[currentGame.GetPlayerOrdinal(playerId)];
+   var playerScore = currentGame.Scores[currentGame.GetPlayerOrdinal(playerId)];
 
    // Tell the player the next turn info
    var playerMessage =
       message.NewMessage(message.MESSAGE_TYPE_NEXT_TURN,
                          message.NextTurnMessagePart{*dropGroup,
                                                      punishments,
+                                                     playerScore,
                                                      opponentPunishments,
                                                      playerLost});
 
@@ -174,6 +176,7 @@ func signalNextTurn(playerId int, dropGroup *[2]gem.Gem, punishments *[][]*gem.G
       message.NewMessage(message.MESSAGE_TYPE_UPDATE,
                          message.UpdateMessagePart{opponentPunishments,
                                                    0,
+                                                   playerScore,
                                                    playerBoard.Board,
                                                    currentGame.CurrentDropForPlayer(playerId),
                                                    playerLost}));
