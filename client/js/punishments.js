@@ -1,7 +1,7 @@
 "use static";
 
 punishments = {};
-punishments.NUM_PUNISHMENT_PATTERNS = 2;
+punishments.NUM_PUNISHMENT_PATTERNS = 3;
 punishments.patterns = [];
 
 function getPunishmentPattern(num) {

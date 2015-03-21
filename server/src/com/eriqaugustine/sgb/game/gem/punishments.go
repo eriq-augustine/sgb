@@ -12,7 +12,7 @@ type DropPattern struct {
    colors [][]int;
 };
 
-const NUM_PATTERNS = 2;
+const NUM_PATTERNS = 3;
 
 var patterns = []DropPattern{
    // Ken
