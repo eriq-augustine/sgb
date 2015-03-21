@@ -8,7 +8,7 @@ import (
 
 const (
    CLIENT_PATH = "../client"
-   PORT = "3030"
+   PORT = "80"
    SOCKET_PATH = "/gamesocket"
 );
 
