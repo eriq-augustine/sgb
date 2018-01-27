@@ -1,9 +1,10 @@
 "use strict";
 
-// Socket.SERVER = 'ws://www.eriqaugustine.com/gamesocket';
-// Socket.SERVER = 'ws://66.169.236.4:3030/gamesocket';
-// Socket.SERVER = 'ws://localhost:12345/testsocket';
-Socket.SERVER = 'ws://supergembattle.com/gamesocket';
+if (window.location.protocol == 'https:') {
+   Socket.SERVER = 'wss://' + window.location.host + '/gamesocket';
+} else {
+   Socket.SERVER = 'ws://' + window.location.host + '/gamesocket';
+}
 
 function Socket(chosenPattern) {
    this.ws = new WebSocket(Socket.SERVER);
